@@ -48,68 +48,18 @@
         "firebase-debug.*.log"
       ]
     }
-
   ],
-  "hosting": [
-    {
-      "target": "car-rental-cust",
-      "public": "dist/car-rental-cust",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "/api/car/**",
-          "function": "flask_car"
-        },
-        {
-          "source": "/api/cleaning/**",
-          "function": "flask_cleaning"
-        },
-        {
-          "source": "/api/transport/**",
-          "function": "flask_transport"
-        },
-        {
-          "source": "/api/user/**",
-          "function": "flask_user"
-        },
-        {
-          "source": "**",
-          "function": "/index.html"
-        }
-      ]
-    },
-    {
-      "target": "transport-service-b2b",
-      "public": "dist/transport-service-b2b",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "/api/car/**",
-          "function": "flask_car"
-        },
-        {
-          "source": "/api/cleaning/**",
-          "function": "flask_cleaning"
-        },
-        {
-          "source": "/api/transport/**",
-          "function": "flask_transport"
-        },
-        {
-          "source": "**",
-          "function": "/index.html"
-        }
-      ]
+  "hosting": {
+    "source": "sites/b2b-site",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "europe-west1"
     }
-  ],
+  },
   "emulators": {
     "auth": {
       "port": 9099
