@@ -1,0 +1,131 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions/car",
+      "codebase": "functions_car",
+      "runtime": "python310",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    },
+    {
+      "source": "functions/cleaning",
+      "codebase": "functions_cleaning",
+      "runtime": "python310",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    },
+    {
+      "source": "functions/user",
+      "codebase": "functions_user",
+      "runtime": "python310",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    },
+    {
+      "source": "functions/transport",
+      "codebase": "functions_transport",
+      "runtime": "python310",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+
+  ],
+  "hosting": [
+    {
+      "target": "car-rental-cust",
+      "public": "dist/car-rental-cust",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/car/**",
+          "function": "flask_car"
+        },
+        {
+          "source": "/api/cleaning/**",
+          "function": "flask_cleaning"
+        },
+        {
+          "source": "/api/transport/**",
+          "function": "flask_transport"
+        },
+        {
+          "source": "/api/user/**",
+          "function": "flask_user"
+        },
+        {
+          "source": "**",
+          "function": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "transport-service-b2b",
+      "public": "dist/transport-service-b2b",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/car/**",
+          "function": "flask_car"
+        },
+        {
+          "source": "/api/cleaning/**",
+          "function": "flask_cleaning"
+        },
+        {
+          "source": "/api/transport/**",
+          "function": "flask_transport"
+        },
+        {
+          "source": "**",
+          "function": "/index.html"
+        }
+      ]
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5050
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": false
+  }
+}

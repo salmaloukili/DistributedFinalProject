@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "distributed-421517"
+  },
+  "targets": {
+    "distributed-421517": {
+      "hosting": {
+        "car-rental-cust": [
+          "car-rental-cust"
+        ],
+        "transport-service-b2b": [
+          "transport-service-b2b"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
