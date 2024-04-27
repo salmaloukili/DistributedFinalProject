@@ -73,6 +73,10 @@
           "source": "/api/transports/**",
           "function": "flask_transports",
           "region": "europe-west1"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
         }
       ]
     },
@@ -104,6 +108,10 @@
           "source": "/api/users/**",
           "function": "flask_users",
           "region": "europe-west1"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
         }
       ]
     }
