@@ -5,20 +5,11 @@
   "targets": {
     "distributed-421517": {
       "hosting": {
-        "car-rental-cust": [
-          "car-rental-cust"
-        ],
-        "transport-service-b2b": [
-          "transport-service-b2b"
-        ],
         "car-rental": [
           "car-rental-dist"
         ],
         "b2b-site": [
           "b2b-site-dist"
-        ],
-        "admin-site": [
-          "distributed-421517"
         ]
       }
     }

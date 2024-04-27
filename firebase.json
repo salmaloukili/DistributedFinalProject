@@ -5,7 +5,7 @@
   },
   "functions": [
     {
-      "source": "functions/car",
+      "source": "functions/cars",
       "codebase": "functions_car",
       "runtime": "python310",
       "ignore": [
@@ -16,7 +16,7 @@
       ]
     },
     {
-      "source": "functions/cleaning",
+      "source": "functions/cleanings",
       "codebase": "functions_cleaning",
       "runtime": "python310",
       "ignore": [
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "source": "functions/user",
+      "source": "functions/users",
       "codebase": "functions_user",
       "runtime": "python310",
       "ignore": [
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "source": "functions/transport",
+      "source": "functions/transports",
       "codebase": "functions_transport",
       "runtime": "python310",
       "ignore": [
@@ -52,39 +52,60 @@
   "hosting": [
     {
       "target": "car-rental",
-      "source": "sites/car-rental",
+      "public": "sites/rental-site/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
         "**/node_modules/**"
       ],
-      "frameworksBackend": {
-        "region": "europe-west1"
-      }
+      "rewrites": [
+        {
+          "source": "/api/cars/**",
+          "function": "flask_cars",
+          "region": "europe-west1"
+        },
+        {
+          "source": "/api/cleanings/**",
+          "function": "flask_cleanings",
+          "region": "europe-west1"
+        },
+        {
+          "source": "/api/transports/**",
+          "function": "flask_transports",
+          "region": "europe-west1"
+        }
+      ]
     },
     {
       "target": "b2b-site",
-      "source": "sites/b2b-site",
+      "public": "sites/b2b-site/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
         "**/node_modules/**"
       ],
-      "frameworksBackend": {
-        "region": "europe-west1"
-      }
-    },
-    {
-      "target": "admin-site",
-      "source": "sites/admin-site",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "frameworksBackend": {
-        "region": "europe-west1"
-      }
+      "rewrites": [
+        {
+          "source": "/api/cars/**",
+          "function": "flask_cars",
+          "region": "europe-west1"
+        },
+        {
+          "source": "/api/cleanings/**",
+          "function": "flask_cleanings",
+          "region": "europe-west1"
+        },
+        {
+          "source": "/api/transports/**",
+          "function": "flask_transports",
+          "region": "europe-west1"
+        },
+        {
+          "source": "/api/users/**",
+          "function": "flask_users",
+          "region": "europe-west1"
+        }
+      ]
     }
   ],
   "emulators": {
