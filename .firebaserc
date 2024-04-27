@@ -10,6 +10,15 @@
         ],
         "transport-service-b2b": [
           "transport-service-b2b"
+        ],
+        "car-rental": [
+          "car-rental-dist"
+        ],
+        "b2b-site": [
+          "b2b-site-dist"
+        ],
+        "admin-site": [
+          "distributed-421517"
         ]
       }
     }
