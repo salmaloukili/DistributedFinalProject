@@ -6,7 +6,7 @@ const Destinations = () => {
   return (
     <section className="mb-4">
       <Container className="mx-auto max-w-[1400px] px-4 py-16 text-center">
-        <Title className="text-center text-2xl">Explore Ukraine, Your Way</Title>
+        <Title className="text-center text-2xl">Explore Belgium, Your Way</Title>
         <ul className="mb-8 grid grid-rows-none gap-2 py-4 md:grid-cols-5 md:gap-4">
           {destinations.map(({ url, title }, idx) => (
             <li

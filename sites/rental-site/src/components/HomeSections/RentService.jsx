@@ -20,7 +20,7 @@ const RentService = () => {
           </p>
 
           <p className="modal-second-title text-secondary-text dark:text-white/50">
-            Are you ready to explore Ukraine like never before? Say goodbye to the limitations of
+            Are you ready to explore Belgium like never before? Say goodbye to the limitations of
             public transportation and embrace the freedom of the open road with our top-notch car
             rental services! At <span className="text-accent-color">RentCars</span>, we`re dedicated
             to making your travel experiences unforgettable.

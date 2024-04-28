@@ -11,7 +11,7 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 
 const App = () => {
   return (
-    <BrowserRouter basename="/rent-cars-react">
+    <BrowserRouter basename="/">
       <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path="/" element={<Layout />}>
