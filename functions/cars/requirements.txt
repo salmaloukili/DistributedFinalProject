@@ -1,2 +1,3 @@
-firebase_functions~=0.1.0
-Flask==2.2.5
+firebase_functions~=0.4.1
+Flask
+flask-marshmallow
