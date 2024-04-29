@@ -5,41 +5,8 @@
   },
   "functions": [
     {
-      "source": "functions/cars",
-      "codebase": "functions_car",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
-      "source": "functions/cleanings",
-      "codebase": "functions_cleaning",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
-      "source": "functions/users",
-      "codebase": "functions_user",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
-      "source": "functions/transports",
-      "codebase": "functions_transport",
+      "source": "functions/api",
+      "codebase": "functions_api",
       "runtime": "python310",
       "ignore": [
         "venv",
@@ -71,21 +38,6 @@
       ],
       "rewrites": [
         {
-          "source": "/api/cars/**",
-          "function": "flask_cars",
-          "region": "europe-west1"
-        },
-        {
-          "source": "/api/cleanings/**",
-          "function": "flask_cleanings",
-          "region": "europe-west1"
-        },
-        {
-          "source": "/api/transports/**",
-          "function": "flask_transports",
-          "region": "europe-west1"
-        },
-        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -101,23 +53,8 @@
       ],
       "rewrites": [
         {
-          "source": "/api/cars/**",
-          "function": "flask_cars",
-          "region": "europe-west1"
-        },
-        {
-          "source": "/api/cleanings/**",
-          "function": "flask_cleanings",
-          "region": "europe-west1"
-        },
-        {
-          "source": "/api/transports/**",
-          "function": "flask_transports",
-          "region": "europe-west1"
-        },
-        {
-          "source": "/api/users/**",
-          "function": "flask_users",
+          "source": "/api/**",
+          "function": "flask_api",
           "region": "europe-west1"
         },
         {

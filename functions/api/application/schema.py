@@ -47,10 +47,10 @@ class CarSchema(FirebaseSchema):
     # Smart hyperlinking
     _links = ma.Hyperlinks(
         {
-            "self": ma.URLFor("car_api.car_detail", values=dict(id="<id>")),
-            "next": ma.URLFor("car_api.car_detail", values=dict(id="<next_id>")),
-            "prev": ma.URLFor("car_api.car_detail", values=dict(id="<prev_id>")),
-            "collection": ma.URLFor("car_api.cars"),
+            "self": ma.URLFor("api.car.get_car", values=dict(id="<id>")),
+            "next": ma.URLFor("api.car.get_car", values=dict(id="<next_id>")),
+            "prev": ma.URLFor("api.car.get_car", values=dict(id="<prev_id>")),
+            "collection": ma.URLFor("api.car.get_cars"),
         }
     )
 
@@ -68,6 +68,6 @@ class CarsSchema(FirebaseSchema):
     # Smart hyperlinking
     _links = ma.Hyperlinks(
         {
-            "self": ma.URLFor("car_api.car_detail", values=dict(id="<id>")),
+            "self": ma.URLFor("api.car.get_car", values=dict(id="<id>")),
         }
     )
