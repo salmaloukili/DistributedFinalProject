@@ -71,17 +71,17 @@
       ],
       "rewrites": [
         {
-          "source": "/api/cars**",
+          "source": "/api/cars/**",
           "function": "flask_cars",
           "region": "europe-west1"
         },
         {
-          "source": "/api/cleanings**",
+          "source": "/api/cleanings/**",
           "function": "flask_cleanings",
           "region": "europe-west1"
         },
         {
-          "source": "/api/transports**",
+          "source": "/api/transports/**",
           "function": "flask_transports",
           "region": "europe-west1"
         },
@@ -101,22 +101,22 @@
       ],
       "rewrites": [
         {
-          "source": "/api/cars**",
+          "source": "/api/cars/**",
           "function": "flask_cars",
           "region": "europe-west1"
         },
         {
-          "source": "/api/cleanings**",
+          "source": "/api/cleanings/**",
           "function": "flask_cleanings",
           "region": "europe-west1"
         },
         {
-          "source": "/api/transports**",
+          "source": "/api/transports/**",
           "function": "flask_transports",
           "region": "europe-west1"
         },
         {
-          "source": "/api/users**",
+          "source": "/api/users/**",
           "function": "flask_users",
           "region": "europe-west1"
         },
