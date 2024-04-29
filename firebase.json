@@ -25,6 +25,17 @@
         "firebase-debug.log",
         "firebase-debug.*.log"
       ]
+    },
+    {
+      "source": "functions/utils",
+      "codebase": "functions_utils",
+      "runtime": "python310",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
     }
   ],
   "hosting": [

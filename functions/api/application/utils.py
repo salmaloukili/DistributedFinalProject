@@ -9,9 +9,10 @@ def get_next_prev(
 ) -> tuple[DocumentSnapshot, str | None, str | None]:
     """
     This function gets the next and previous documents in a collection.
-    It uses sorting to get the next adjacent item. Not very efficient but 
+    It uses sorting to get the next adjacent item. Not very efficient but
     HATEOAS requires it... Starting to realize why nobody in the real world
     actually uses HATEOAS.
+    
     Args:
         id (str): The document ID to search.
         ref (CollectionReference): The collection the document is in.
