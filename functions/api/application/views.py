@@ -4,7 +4,14 @@ api_bp = Blueprint("api", __name__)
 
 
 @api_bp.get("/")
-def site_map():
+def site_map()-> dict[str, str | list]:
+    """
+    Returns a dict containing all the endpoints as well as their 
+    information such as path, method, and arguments.
+
+    Returns:
+        dict[str, str | list]: _description_
+    """
     links = {}
     for rule in app.url_map.iter_rules():
         if rule.endpoint == "static":

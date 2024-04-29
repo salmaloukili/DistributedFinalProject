@@ -6,12 +6,35 @@ ma = Marshmallow(app)
 
 
 class FirebaseSchema(ma.Schema):
+    """
+    This class extends the Marshmallow Schema to add the
+    required fields to the dictionary (for HATEOAS).
+    """
+
     def dump(
         self,
         obj: list[DocumentSnapshot] | DocumentSnapshot,
         next: str = None,
         prev: str = None,
-    ):
+    ) -> list[dict] | dict:
+        """
+        Adds the id, next_id and prev_id to the document/documents.
+        It checks if it is a single document or a list and handles it
+        accordingly.
+
+        Args:
+            obj (list[DocumentSnapshot] | DocumentSnapshot): 
+                The object or list of objects.
+            next (str, optional):
+                The next object ID, unused if parsing list of documents.
+                Defaults to None.
+            prev (str, optional): 
+                The previous object ID, unused if parsing list of documents.
+                Defaults to None.
+
+        Returns:
+            list[dict] | dict: Serialized document/documents.
+        """
         if not obj:
             return []
 
@@ -36,6 +59,7 @@ class FirebaseSchema(ma.Schema):
 
 class CarSchema(FirebaseSchema):
     class Meta:
+        # TODO: Add more fields.
         fields = (
             "brand",
             "color",
@@ -71,3 +95,7 @@ class CarsSchema(FirebaseSchema):
             "self": ma.URLFor("api.car.get_car", values=dict(id="<id>")),
         }
     )
+
+
+car_schema = CarSchema()
+cars_schema = CarsSchema(many=True)

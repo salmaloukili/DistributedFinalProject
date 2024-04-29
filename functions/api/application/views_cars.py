@@ -1,17 +1,24 @@
-from flask import Blueprint, abort, request
-from .schema import CarSchema, CarsSchema
+from flask import Blueprint, request
+from .utils import get_next_prev
+from .schema import car_schema, cars_schema
 from firebase_admin import firestore
 
+
 bp = Blueprint("car", __name__)
+
 db = firestore.client()
 car_ref = db.collection("cars")
 
-car_schema = CarSchema()
-cars_schema = CarsSchema(many=True)
-
 
 @bp.get("/")
-def get_cars():
+def get_cars() -> list[dict]:
+    """
+    Gets all the cars and returns them through the schema.
+    Each car object gets a self URL to get its full data.
+
+    Returns:
+        list[dict]: The serialized cars.
+    """
     sort = request.args.get("sort")
 
     if sort not in cars_schema.Meta.fields:
@@ -23,26 +30,22 @@ def get_cars():
 
 
 @bp.get("/<id>")
-def get_car(id: str):
+def get_car(id: str) -> dict:
+    """
+    API endpoint to get a single car, with all the HATEOAS
+    unnecessary fluff.
+    
+    Args:
+        id (str): The Firebase ID for the car.
+    Returns:
+        dict: Serialized object.
+    """
     sort = request.args.get("sort")
-    car = car_ref.document(id).get()
 
-    if not car.exists:
-        return abort(404)
-
+    # If no sort requested simply use any, this is required to
+    # get the next and previous objects since Firebase cannot
+    # sort the ID in descending order.
     if sort not in car_schema.Meta.fields:
         sort = car_schema.Meta.fields[0]
 
-    next = car_ref.order_by(sort)
-    prev = car_ref.order_by(sort, direction=firestore.Query.DESCENDING)
-
-    try:
-        next = next.start_at(car).limit(2).get()[1].id
-    except IndexError:
-        next = None
-    try:
-        prev = prev.start_at(car).limit(2).get()[1].id
-    except IndexError:
-        prev = None
-
-    return car_schema.dump(car, next, prev)
+    return car_schema.dump(*get_next_prev(id, car_ref, sort))
