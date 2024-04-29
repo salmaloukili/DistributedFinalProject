@@ -1,9 +1,7 @@
 from flask import Flask
-from firebase_admin import initialize_app
 from firebase_functions import https_fn
 import application
 
-initialize_app()
 app = Flask(__name__)
 
 
