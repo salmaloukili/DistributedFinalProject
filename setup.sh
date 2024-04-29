@@ -34,6 +34,12 @@ source ./venv/bin/activate
 pip install -r requirements.txt
 source deactivate &
 
+cd ./../faker
+python3.10 -m venv venv
+source ./venv/bin/activate
+pip install -r requirements.txt
+source deactivate &
+
 cd ./../../sites/b2b-site
 npm install
 npm run build
