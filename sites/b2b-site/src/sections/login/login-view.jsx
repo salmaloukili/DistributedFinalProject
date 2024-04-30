@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-
+import { useState, useRef, useEffect } from 'react';
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from 'src/utils/firebase';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -21,42 +21,51 @@ import { bgGradient } from 'src/theme/css';
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 
-const auth = getAuth();
-connectAuthEmulator(auth, "http://127.0.0.1:9099");
-
 // ----------------------------------------------------------------------
 
 export default function LoginView() {
-  const theme = useTheme();
-
-  const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
+  // const [isAuthReady, setIsAuthReady] = useState(false);
+  const theme = useTheme();
+  // const router = useRouter();
+  const passwordRef = useRef();
+  const emailRef = useRef();
 
-  const handleClick = () => {
-    router.push('/');
+  const handleLogin = (e) => {
+    e.preventDefault()
+    signInWithEmailAndPassword(auth,
+      emailRef.current.value, passwordRef.current.value)
+      .then(() => { }).catch((error) => {
+        console.log(error)
+      })
   };
 
   const renderForm = (
     <>
-      <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+      <form>
+        <Stack spacing={3}>
 
-        <TextField
-          name="password"
-          label="Password"
-          type={showPassword ? 'text' : 'password'}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                  <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Stack>
+          <TextField name="email" autoComplete='email'
+            label="Email address" inputRef={emailRef} />
+
+          <TextField
+            name="password"
+            label="Password"
+            autoComplete='password'
+            inputRef={passwordRef}
+            type={showPassword ? 'text' : 'password'}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
+      </form>
 
       <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
         <Link variant="subtitle2" underline="hover">
@@ -70,7 +79,7 @@ export default function LoginView() {
         type="submit"
         variant="contained"
         color="inherit"
-        onClick={handleClick}
+        onClick={handleLogin}
       >
         Login
       </LoadingButton>
@@ -119,6 +128,7 @@ export default function LoginView() {
               color="inherit"
               variant="outlined"
               sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
+              onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}
             >
               <Iconify icon="eva:google-fill" color="#DF3E30" />
             </Button>
