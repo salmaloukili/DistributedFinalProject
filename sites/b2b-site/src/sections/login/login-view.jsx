@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -20,6 +21,9 @@ import { bgGradient } from 'src/theme/css';
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 
+const auth = getAuth();
+connectAuthEmulator(auth, "http://127.0.0.1:9099");
+
 // ----------------------------------------------------------------------
 
 export default function LoginView() {
@@ -30,7 +34,7 @@ export default function LoginView() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClick = () => {
-    router.push('/dashboard');
+    router.push('/');
   };
 
   const renderForm = (
@@ -117,26 +121,6 @@ export default function LoginView() {
               sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
             >
               <Iconify icon="eva:google-fill" color="#DF3E30" />
-            </Button>
-
-            <Button
-              fullWidth
-              size="large"
-              color="inherit"
-              variant="outlined"
-              sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
-            >
-              <Iconify icon="eva:facebook-fill" color="#1877F2" />
-            </Button>
-
-            <Button
-              fullWidth
-              size="large"
-              color="inherit"
-              variant="outlined"
-              sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
-            >
-              <Iconify icon="eva:twitter-fill" color="#1C9CEA" />
             </Button>
           </Stack>
 
