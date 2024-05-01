@@ -40,21 +40,6 @@
   ],
   "hosting": [
     {
-      "target": "car-rental",
-      "public": "sites/rental-site/dist",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
-    },
-    {
       "target": "b2b-site",
       "public": "sites/b2b-site/dist",
       "ignore": [

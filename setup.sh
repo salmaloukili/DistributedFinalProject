@@ -26,6 +26,6 @@ cd ./../../sites/b2b-site
 npm install
 npm run build
 
-cd ./../rental-site
-npm install
-npm run build
+# cd ./../rental-site
+# npm install
+# npm run build
