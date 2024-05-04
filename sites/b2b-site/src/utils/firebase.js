@@ -1,10 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 
-let response = await fetch('/__/firebase/init.json');
+let response = fetch('/__/firebase/init.json');
 
 if (response.ok) {
-  response = response.json();
+  response = await response.json();
+  console.log(response);
 } else {
   response = {
     apiKey: 'test-api-key',

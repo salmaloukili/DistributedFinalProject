@@ -84,7 +84,7 @@ class CarsSchema(FirebaseSchema):
         fields = (
             "brand",
             "color",
-            "dealer",
+            # "dealer",
             "year_built",
             "_links",
         )
