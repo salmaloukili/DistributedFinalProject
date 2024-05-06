@@ -5,17 +5,6 @@
   },
   "functions": [
     {
-      "source": "functions/api",
-      "codebase": "functions_api",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
       "source": "functions/faker",
       "codebase": "faker_run",
       "runtime": "python310",
@@ -36,6 +25,20 @@
         "firebase-debug.log",
         "firebase-debug.*.log"
       ]
+    },
+    {
+      "source": "functions/api",
+      "codebase": "functions_api",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
     }
   ],
   "hosting": [
@@ -50,7 +53,7 @@
       "rewrites": [
         {
           "source": "/api/**",
-          "function": "flask_api",
+          "function": "functions_api",
           "region": "europe-west1"
         },
         {

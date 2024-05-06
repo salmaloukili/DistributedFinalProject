@@ -1,0 +1,6 @@
+firebase_functions
+safrs
+Flask
+Flask-SQLAlchemy
+SQLAlchemy
+flask-swagger-ui
