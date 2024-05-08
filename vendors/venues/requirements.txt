@@ -1,4 +1,3 @@
-firebase_functions
 safrs
 Flask
 Flask-SQLAlchemy
