@@ -1,6 +1,5 @@
 from flask import Flask
 from safrs import SafrsApi
-from .models import db, user
 
 
 def create_app():
@@ -14,8 +13,14 @@ def create_app():
 
 
 def setup_database(app):
+    from .models import db, models
+
     with app.app_context():
         db.init_app(app)
         db.create_all()
-        api = SafrsApi(app, prefix="/api")
-        api.expose_object(user)
+
+        api = SafrsApi(app, host="127.0.0.1", prefix="/api")
+
+        for model in models:
+            api.expose_object(model)
+        

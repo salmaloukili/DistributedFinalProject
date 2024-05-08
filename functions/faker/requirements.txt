@@ -1,2 +1,0 @@
-firebase_functions~=0.4.1
-Faker~=24.14.1
