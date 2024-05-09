@@ -6,10 +6,16 @@ import { JSONAPISource } from "@orbit/jsonapi";
 
 const schema = new RecordSchema({
   models: {
-    user: {
+    Employee: {
       attributes: {
-        name: { type: "string" },
+        first_name: { type: "string" },
+        last_name: { type: "string" },
         email: { type: "string" },
+        privileges: { type: "string" },
+        hire_date: { type: "date" },
+        salary: { type: "number" },
+        created_at: { type: "datetime" },
+        modified_at: { type: "datetime" },
       },
     },
   },
@@ -50,9 +56,7 @@ router.get("/test", (req: Request, res: Response) => {
 });
 
 router.get("/", (req: Request, res: Response) => {
-  const users = source.query((q) =>
-    q.findRecords("user").filter({ attribute: "email", value: "poopie@x.org" })
-  );
+  const users = source.query((q) => q.findRecords("Employee"));
   users
     .then((r) => {
       res.json(r);

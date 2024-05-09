@@ -1,4 +1,3 @@
-from email.policy import default
 import random
 from flask_sqlalchemy import SQLAlchemy
 from safrs import SAFRSBase, SAFRSFormattedResponse, ValidationError, jsonapi_rpc
@@ -44,7 +43,7 @@ class BaseModel(SAFRSBase, db.Model):
     )
 
 
-class Employees(BaseModel):
+class Employee(BaseModel):
     __tablename__ = "employees"
     id = db.Column(db.Integer, primary_key=True)
     first_name = FunctionDefault(db.String(50), default=fake.first_name)
@@ -59,21 +58,21 @@ class Employees(BaseModel):
     )
 
 
-class Venues(BaseModel):
+class Venue(BaseModel):
     __tablename__ = "venues"
     id = db.Column(db.Integer, primary_key=True)
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
     location = FunctionDefault(db.String(200), default=fake.address)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(50, 500))
-    events = db.relationship("Events", back_populates="venues")
+    event = db.relationship("Event", back_populates="venue")
 
 
-class Events(BaseModel):
+class Event(BaseModel):
     __tablename__ = "events"
     id = db.Column(db.Integer, primary_key=True)
-    venues_id = db.Column(db.Integer, db.ForeignKey("venues.id"), nullable=False)
-    venues = db.relationship("Venues", back_populates="events")
-    tickets = db.relationship("Tickets", back_populates="events")
+    venue_id = db.Column(db.Integer, db.ForeignKey("venues.id"), nullable=False)
+    venue = db.relationship("Venue", back_populates="event")
+    ticket = db.relationship("Ticket", back_populates="event")
 
     max_price = FunctionDefault(db.Float, default=lambda: random.randint(50, 100))
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
@@ -88,26 +87,26 @@ class Events(BaseModel):
         args:
             user_id: The Firebase user ID
         """
-        capacity = Venues.query.get(self.venues_id).capacity
-        ticket_count = Tickets.query.count()
+        capacity = Venue.query.get(self.venue_id).capacity
+        ticket_count = Ticket.query.count()
 
         if capacity > ticket_count:
             raise ValidationError("Event is fully booked.")
 
-        ticket = Tickets(user_id=user_id, events_id=self.id, price=self.max_price)
+        ticket = Ticket(user_id=user_id, event_id=self.id, price=self.max_price)
 
         self.max_price = round(self.max_price * (capacity / ticket_count))
         return SAFRSFormattedResponse(ticket)
 
 
-class Tickets(BaseModel):
+class Ticket(BaseModel):
     __tablename__ = "tickets"
     http_methods = ["get", "delete"]
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
-    events_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
-    events = db.relationship("Events", back_populates="tickets")
+    event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
+    event = db.relationship("Event", back_populates="ticket")
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )
@@ -116,7 +115,7 @@ class Tickets(BaseModel):
     )
 
 
-models = [Employees, Events, Tickets, Venues]
+models = [Employee, Event, Ticket, Venue]
 
 
 def populate_database():
@@ -126,9 +125,9 @@ def populate_database():
         Employees()
 
     for _ in range(0, random.randint(4, 6)):
-        venue = Venues()
+        venue = Venue()
         for _ in range(0, random.randint(9, 20)):
-            event = Events(venues_id=venue.id)
+            event = Event(venue_id=venue.id)
             for _ in range(0, random.randint(0, round(venue.capacity / 2))):
-                Tickets(events_id=event.id)
+                Ticket(event_id=event.id)
     return "Success"

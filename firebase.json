@@ -5,17 +5,6 @@
   },
   "functions": [
     {
-      "source": "functions/faker",
-      "codebase": "faker_run",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
       "source": "functions/utils",
       "codebase": "functions_utils",
       "runtime": "python310",
