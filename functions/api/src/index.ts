@@ -31,30 +31,6 @@ const source = new JSONAPISource({
 const app: Application = express();
 const router = express.Router();
 
-router.get("/htm", (req: Request, res: Response) => {
-  const date = new Date();
-  const hours = (date.getHours() % 12) + 1; // London is UTC + 1hr;
-  res.send(`
-      <!doctype html>
-      <head>
-        <title>Time</title>
-        <link rel="stylesheet" href="/style.css">
-        <script src="/script.js"></script>
-      </head>
-      <body>
-        <p>In London, the clock strikes:
-          <span id="bongs">${"BONG ".repeat(hours)}</span></p>
-        <button onClick="refresh(this)">Refresh</button>
-      </body>
-    </html>`);
-});
-
-router.get("/test", (req: Request, res: Response) => {
-  const date = new Date();
-  const hours = (date.getHours() % 12) + 1; // London is UTC + 1hr;
-  res.json({ bongs: "BONG ".repeat(hours) });
-});
-
 router.get("/", (req: Request, res: Response) => {
   const users = source.query((q) => q.findRecords("Employee"));
   users

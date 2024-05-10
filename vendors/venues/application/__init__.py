@@ -3,12 +3,12 @@ from safrs import SafrsApi
 
 
 def create_app():
-    from application import views
+    from .views import bp
 
     app = Flask(__name__)
     app.config["DEBUG"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///sqlite.db"
-    app.register_blueprint(views.bp)
+    app.register_blueprint(bp)
     return app
 
 
