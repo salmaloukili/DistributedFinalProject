@@ -11,6 +11,7 @@ class MyModelView(sqla.ModelView):
             and current_user.is_authenticated
             and current_user.has_role("superuser")
         )
+        # return True
 
     def _handle_view(self, name, **kwargs):
         """

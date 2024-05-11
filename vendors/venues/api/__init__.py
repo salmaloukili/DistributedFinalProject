@@ -1,6 +1,6 @@
-from flask_security import Security, SQLAlchemyUserDatastore
+from flask_security import Security
 from flask_admin import Admin, helpers
-from flask import Flask, url_for
+from flask import url_for
 from safrs import SafrsApi
 from .views import bp
 
@@ -10,7 +10,7 @@ def create_app(app):
 
 
 def setup_database(app):
-    from .models import db, models, Employee, Role
+    from .models import db, models, datastore
     from .admin import MyModelView
 
     with app.app_context():
@@ -22,8 +22,13 @@ def setup_database(app):
             base_template="my_master.html",
             template_mode="bootstrap4",
         )
-        datastore = SQLAlchemyUserDatastore(db, Employee, Role)
+
         security = Security(app, datastore)
+        api = SafrsApi(app, host="127.0.0.1", prefix="/api")
+
+        for model in models:
+            admin.add_view(MyModelView(model, db.session))
+            api.expose_object(model)
 
         @security.context_processor
         def security_context_processor():
@@ -33,13 +38,3 @@ def setup_database(app):
                 h=helpers,
                 get_url=url_for,
             )
-
-        api = SafrsApi(app, host="127.0.0.1", prefix="/api")
-
-        for model in models:
-            admin.add_view(MyModelView(model, db.session))
-            api.expose_object(model)
-
-
-# define a context processor for merging flask-admin's template context into the
-# flask-security views.

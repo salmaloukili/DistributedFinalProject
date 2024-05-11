@@ -1,7 +1,9 @@
 import random
 from flask_sqlalchemy import SQLAlchemy
 from safrs import SAFRSBase, SAFRSFormattedResponse, ValidationError, jsonapi_rpc
-from flask_security import RoleMixin, UserMixin
+from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin
+from flask_security.utils import hash_password
+
 import datetime
 from faker import Faker
 
@@ -70,17 +72,18 @@ class Employee(BaseModel, UserMixin):
     email = FunctionDefault(db.String(120), default=fake.email)
     password = db.Column(db.String(255))
 
-    is_active = db.Column(db.Boolean())
+    active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
     roles = db.relationship(
         "Role", secondary=roles_employees, backref=db.backref("users", lazy="dynamic")
     )
 
+
 class Venue(BaseModel):
     __tablename__ = "venues"
     id = db.Column(db.Integer, primary_key=True)
-    name = FunctionDefault(db.String(100), default=fake.catch_phrase)
+    name = FunctionDefault(db.String(100), default=fake.company)
     location = FunctionDefault(db.String(200), default=fake.address)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(50, 500))
     event = db.relationship("Event", back_populates="venue")
@@ -134,14 +137,27 @@ class Ticket(BaseModel):
     )
 
 
+datastore = SQLAlchemyUserDatastore(db, Employee, Role)
 models = [Employee, Event, Ticket, Venue, Role]
 
 
 def populate_database():
     db.drop_all()
     db.create_all()
-    for _ in range(0, 40):
-        Employee()
+    user_role = Role(name="user")
+    super_user_role = Role(name="superuser")
+    db.session.add(user_role)
+    db.session.add(super_user_role)
+    db.session.commit()
+
+    datastore.create_user(
+        first_name="Admin",
+        email="admin@example.com",
+        password=hash_password("admin"),
+        roles=[user_role, super_user_role],
+    )
+    # for _ in range(0, 40):
+    #     Employee()
 
     for _ in range(0, random.randint(4, 6)):
         venue = Venue()
