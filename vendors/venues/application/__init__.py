@@ -1,3 +1,5 @@
+from flask_admin.contrib.sqla import ModelView
+from flask_admin import Admin
 from flask import Flask
 from safrs import SafrsApi
 
@@ -18,9 +20,10 @@ def setup_database(app):
     with app.app_context():
         db.init_app(app)
         db.create_all()
+        admin = Admin(app, name="microblog", template_mode="bootstrap3")
 
         api = SafrsApi(app, host="127.0.0.1", prefix="/api")
 
         for model in models:
+            admin.add_view(ModelView(model, db.session))
             api.expose_object(model)
-        

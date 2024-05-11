@@ -3,3 +3,4 @@ Flask
 Flask-SQLAlchemy
 SQLAlchemy
 flask-swagger-ui
+flask-admin
