@@ -1,1 +1,1 @@
-from .wsgi import app as app_venues
+from .app import app as app_venues

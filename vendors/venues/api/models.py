@@ -1,6 +1,7 @@
 import random
 from flask_sqlalchemy import SQLAlchemy
 from safrs import SAFRSBase, SAFRSFormattedResponse, ValidationError, jsonapi_rpc
+from flask_security import RoleMixin, UserMixin
 import datetime
 from faker import Faker
 
@@ -43,20 +44,38 @@ class BaseModel(SAFRSBase, db.Model):
     )
 
 
-class Employee(BaseModel):
+roles_employees = db.Table(
+    "roles_employees",
+    db.Column("employees_id", db.Integer(), db.ForeignKey("employees.id")),
+    db.Column("roles_id", db.Integer(), db.ForeignKey("roles.id")),
+)
+
+
+class Role(SAFRSBase, db.Model, RoleMixin):
+    __tablename__ = "roles"
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+    def __str__(self):
+        return self.name
+
+
+class Employee(BaseModel, UserMixin):
     __tablename__ = "employees"
     id = db.Column(db.Integer, primary_key=True)
     first_name = FunctionDefault(db.String(50), default=fake.first_name)
     last_name = FunctionDefault(db.String(50), default=fake.last_name)
-    email = FunctionDefault(db.String(120), default=fake.email)
-    privileges = FunctionDefault(db.String(50), default=fake.job)
-    hire_date = FunctionDefault(
-        db.Date, default=lambda: fake.date_between(start_date="-10y", end_date="today")
-    )
-    salary = FunctionDefault(
-        db.DECIMAL(7, 2), default=lambda: round(random.uniform(30000, 100000), 2)
-    )
 
+    email = FunctionDefault(db.String(120), default=fake.email)
+    password = db.Column(db.String(255))
+
+    is_active = db.Column(db.Boolean())
+    confirmed_at = db.Column(db.DateTime())
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
+    roles = db.relationship(
+        "Role", secondary=roles_employees, backref=db.backref("users", lazy="dynamic")
+    )
 
 class Venue(BaseModel):
     __tablename__ = "venues"
@@ -115,14 +134,14 @@ class Ticket(BaseModel):
     )
 
 
-models = [Employee, Event, Ticket, Venue]
+models = [Employee, Event, Ticket, Venue, Role]
 
 
 def populate_database():
     db.drop_all()
     db.create_all()
     for _ in range(0, 40):
-        Employees()
+        Employee()
 
     for _ in range(0, random.randint(4, 6)):
         venue = Venue()
