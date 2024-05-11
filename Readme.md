@@ -37,3 +37,6 @@ A small faker function is loaded onto some URL to generate new data on the fly. 
 ## Other Cloud Functions
 I left another functions called util, this should be used for Firebase event driven functions. Lets say whenever someone rents a car, I want to make a new cleaning order.
 Or whenever a new user is added do x or y, it should go there.
+
+## Vendors
+To run the vendors, make sure you have the venv sourced with flask. Run `flask --debug run` in the folder with app.py.
