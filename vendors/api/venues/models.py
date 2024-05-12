@@ -62,22 +62,6 @@ class Ticket(BaseModel):
 
 
 def populate_database():
-    from ..models import Role, datastore
-
-    db.drop_all()
-    db.create_all()
-    user_role = Role(name="user")
-    super_user_role = Role(name="superuser")
-    db.session.add(user_role)
-    db.session.add(super_user_role)
-    db.session.commit()
-
-    datastore.create_user(
-        first_name="Admin",
-        email="admin@example.com",
-        password=hash_password("admin"),
-        roles=[user_role, super_user_role],
-    )
     for _ in range(0, random.randint(4, 6)):
         venue = Venue()
         for _ in range(0, random.randint(9, 20)):

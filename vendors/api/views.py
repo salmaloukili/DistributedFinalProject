@@ -2,7 +2,7 @@ from flask import Blueprint
 from .models import populate_database
 
 
-bp = Blueprint("api", "/api")
+bp = Blueprint("apiBP", "api", url_prefix="/api")
 
 
 @bp.get("/populate_db")

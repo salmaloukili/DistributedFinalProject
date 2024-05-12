@@ -1,5 +1,8 @@
 import vendors.api.venues as venues
+import vendors.api.transport as transport
+import vendors.api.catering as catering
 import vendors.api as api
+from .views import bp
 from flask_security import Security
 from flask_admin import Admin, helpers
 from flask import url_for
@@ -7,7 +10,13 @@ from safrs import SafrsApi
 
 
 def create_app(app):
+    app.register_blueprint(api.bp)
     app.register_blueprint(venues.bp)
+    app.register_blueprint(catering.bp)
+    app.register_blueprint(transport.bp)
+    app.register_blueprint(bp)
+
+
 
 
 def setup_database(app):
@@ -37,6 +46,21 @@ def setup_database(app):
 
         safrs._custom_swagger = swagger
 
+        for model in api.models:
+            admin.add_view(api.AdminModelView(model, api.db.session))
+            safrs.expose_object(
+                model,
+                method_decorators=[api.auth.verify_token],
+            )
+
+        for model in transport.models:
+            admin.add_view(api.AdminModelView(model, api.db.session))
+            safrs.expose_object(
+                model,
+                "/transport",
+                method_decorators=[api.auth.verify_token],
+            )
+
         for model in venues.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
@@ -45,13 +69,13 @@ def setup_database(app):
                 method_decorators=[api.auth.verify_token],
             )
 
-        for model in api.models:
+        for model in catering.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
                 model,
+                "/catering",
                 method_decorators=[api.auth.verify_token],
             )
-
 
         @security.context_processor
         def security_context_processor():
