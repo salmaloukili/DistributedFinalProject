@@ -1,21 +1,20 @@
+import vendors.api.venues as venues
+import vendors.api as api
 from flask_security import Security
 from flask_admin import Admin, helpers
 from flask import url_for
 from safrs import SafrsApi
-from .views import bp
 
 
 def create_app(app):
-    app.register_blueprint(bp)
+    app.register_blueprint(venues.bp)
 
 
 def setup_database(app):
-    from .models import db, models, datastore, auth
-    from .admin import MyModelView
 
     with app.app_context():
-        db.init_app(app)
-        db.create_all()
+        api.db.init_app(app)
+        api.db.create_all()
         admin = Admin(
             app,
             "Example: Auth",
@@ -23,10 +22,10 @@ def setup_database(app):
             template_mode="bootstrap4",
         )
 
-        security = Security(app, datastore)
-        api = SafrsApi(app, host="127.0.0.1", prefix="/api")
+        security = Security(app, api.datastore)
+        safrs = SafrsApi(app, host="127.0.0.1", prefix="/api")
 
-        swagger = api.get_swagger_doc()
+        swagger = safrs.get_swagger_doc()
         swagger["securityDefinitions"] = {
             "Bearer": {
                 "type": "apiKey",
@@ -36,14 +35,23 @@ def setup_database(app):
             }
         }
 
-        api._custom_swagger = swagger
+        safrs._custom_swagger = swagger
 
-        for model in models:
-            admin.add_view(MyModelView(model, db.session))
-            api.expose_object(
+        for model in venues.models:
+            admin.add_view(api.AdminModelView(model, api.db.session))
+            safrs.expose_object(
                 model,
-                method_decorators=[auth.verify_token],
+                "/venues",
+                method_decorators=[api.auth.verify_token],
             )
+
+        for model in api.models:
+            admin.add_view(api.AdminModelView(model, api.db.session))
+            safrs.expose_object(
+                model,
+                method_decorators=[api.auth.verify_token],
+            )
+
 
         @security.context_processor
         def security_context_processor():
