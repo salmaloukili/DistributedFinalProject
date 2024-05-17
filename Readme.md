@@ -10,7 +10,7 @@ chmod +x ./setup.sh
 ## Running
 The setup script automatically builds the sites so you only have to run:
 ```
-firebase emulators:start --import=./saved-data
+firebase emulators:start
 ```
 This will deploy everything locally, if you are working on the sites and want to have live reload you can either run them using dev or build. Dev will run them separate from firebase so the API might not work but the page will reload by itself. Good to develop the site's appearance. 
 
