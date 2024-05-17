@@ -1,7 +1,9 @@
 safrs
 Flask
+faker
 Flask-SQLAlchemy
 SQLAlchemy
 flask-swagger-ui
 flask-admin
 flask_httpauth
+Flask-Security-Too

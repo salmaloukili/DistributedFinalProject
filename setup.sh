@@ -23,9 +23,8 @@ source deactivate &
 cd ./../../
 python3.10 -m venv .venv
 source ./.venv/bin/activate
-cd ./vendors/venues
-pip install -r requirements.txt
+pip install -r ./vendors/requirements.txt
 
-cd ./../../sites/b2b-site
+cd ./sites/b2b-site
 npm install
 npm run build
