@@ -7,6 +7,7 @@ from flask_security import Security
 from flask_admin import Admin, helpers
 from flask import url_for
 from safrs import SafrsApi
+from .auth import auth
 
 
 def create_app(app):
@@ -15,8 +16,6 @@ def create_app(app):
     app.register_blueprint(catering.bp)
     app.register_blueprint(transport.bp)
     app.register_blueprint(bp)
-
-
 
 
 def setup_database(app):
@@ -30,27 +29,27 @@ def setup_database(app):
             base_template="my_master.html",
             template_mode="bootstrap4",
         )
-
-        security = Security(app, api.datastore)
-        safrs = SafrsApi(app, host="127.0.0.1", prefix="/api")
-
-        swagger = safrs.get_swagger_doc()
-        swagger["securityDefinitions"] = {
-            "Bearer": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header",
-                "description": "Enter the token with the `Bearer: ` prefix, e.g. 'Bearer abcde12345'.",
-            }
+        custom_swagger = {
+            "securityDefinitions": {
+                "Bearer": {
+                    "type": "apiKey",
+                    "in": "header",
+                    "name": "Authorization",
+                    "description": "Enter the token with the `Bearer: ` prefix, e.g. 'Bearer abcde12345'.",
+                }
+            },
+            "security": [{"Bearer": []}],
         }
-
-        safrs._custom_swagger = swagger
+        security = Security(app, api.datastore)
+        safrs = SafrsApi(
+            app, host="127.0.0.1", prefix="/api", custom_swagger=custom_swagger
+        )
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
                 model,
-                method_decorators=[api.auth.verify_token],
+                method_decorators=[auth.login_required],
             )
 
         for model in transport.models:
@@ -58,7 +57,7 @@ def setup_database(app):
             safrs.expose_object(
                 model,
                 "/transport",
-                method_decorators=[api.auth.verify_token],
+                method_decorators=[auth.login_required],
             )
 
         for model in venues.models:
@@ -66,7 +65,7 @@ def setup_database(app):
             safrs.expose_object(
                 model,
                 "/venues",
-                method_decorators=[api.auth.verify_token],
+                method_decorators=[auth.login_required],
             )
 
         for model in catering.models:
@@ -74,7 +73,7 @@ def setup_database(app):
             safrs.expose_object(
                 model,
                 "/catering",
-                method_decorators=[api.auth.verify_token],
+                method_decorators=[auth.login_required],
             )
 
         @security.context_processor

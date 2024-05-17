@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from safrs import SAFRSBase
 from flask_security.utils import hash_password
 from flask_security import RoleMixin, UserMixin
-from flask_httpauth import HTTPTokenAuth
 from faker import Faker
 import random
 
@@ -13,8 +12,6 @@ Faker.seed(1)
 
 fake = Faker()
 db = SQLAlchemy()
-
-auth = HTTPTokenAuth()
 
 
 class TimeColumn(db.Column):
@@ -34,11 +31,6 @@ def FunctionDefault(col, **kwargs):
 
     cls = type(f"Column_{col}_{_sample}", (db.Column,), dict(sample=_sample))
     return cls(col, **kwargs)
-
-
-@auth.verify_token
-def verify_token(token):
-    return token == "token"
 
 
 class BaseModel(SAFRSBase, db.Model):
