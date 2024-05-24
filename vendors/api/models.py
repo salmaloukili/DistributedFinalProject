@@ -65,6 +65,7 @@ class Role(SAFRSBase, db.Model, RoleMixin):
 
 class Employee(BaseModel, UserMixin):
     __tablename__ = "employees"
+    http_methods = []
     id = db.Column(db.Integer, primary_key=True)
     first_name = FunctionDefault(db.String(50), default=fake.first_name)
     last_name = FunctionDefault(db.String(50), default=fake.last_name)

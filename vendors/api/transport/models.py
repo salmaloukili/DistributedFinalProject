@@ -42,12 +42,18 @@ class Seat(BaseModel):
     sold_date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1y", end_date="now")
     )
+    status = FunctionDefault(
+        db.String(100),
+        default=lambda: random.choice(["reserved", "bought"]),
+        nullable=False,
+    )
+
 
 
 def populate_database():
-    for _ in range(0, random.randint(4, 6)):
+    for _ in range(0, random.randint(2, 4)):
         bus = Bus()
-        for _ in range(0, random.randint(9, 20)):
+        for _ in range(0, random.randint(2, 8)):
             schedule = Schedule(bus_id=bus.id)
             for _ in range(0, random.randint(0, round(bus.capacity / 2))):
                 Seat(schedule_id=schedule.id)

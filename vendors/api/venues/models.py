@@ -59,12 +59,17 @@ class Ticket(BaseModel):
     sold_date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1y", end_date="today")
     )
+    status = FunctionDefault(
+        db.String(100),
+        default=lambda: random.choice(["reserved", "bought"]),
+        nullable=False,
+    )
 
 
 def populate_database():
-    for _ in range(0, random.randint(4, 6)):
+    for _ in range(0, random.randint(2, 4)):
         venue = Venue()
-        for _ in range(0, random.randint(9, 20)):
+        for _ in range(0, random.randint(2, 8)):
             event = Event(venue_id=venue.id)
             for _ in range(0, random.randint(0, round(venue.capacity / 2))):
                 Ticket(event_id=event.id)
