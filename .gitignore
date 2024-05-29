@@ -230,3 +230,5 @@ functions/user/venv
 functions/transport/venv
 functions/cleaning/venv
 functions/car/venv
+instance/
+node_modules/

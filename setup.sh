@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt install -y curl python3.10 python3.10-venv
+sudo apt install -y curl python3.10 python3.10-venv openjdk-17-jdk
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -10,21 +10,15 @@ nvm install --lts
 npm install -g firebase-tools
 firebase login
 
-cd ./functions/api
+cd ./src/api
 npm install
 npm run build
 
-cd ./../utils
-python3.10 -m venv venv
-source ./venv/bin/activate
-pip install -r requirements.txt
-source deactivate &
+cd ./../b2b-site
+npm install
+npm run build
 
-cd ./../../
+cd ../../
 python3.10 -m venv .venv
 source ./.venv/bin/activate
-pip install -r ./vendors/requirements.txt
-
-cd ./sites/b2b-site
-npm install
-npm run build
+pip install -r ./src/vendors/requirements.txt

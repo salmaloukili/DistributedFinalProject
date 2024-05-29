@@ -1,0 +1,14 @@
+{
+  "name": "distributedfinalproject",
+  "version": "1.0.0",
+  "description": "Distributed Final Project",
+  "scripts": {
+    "watch:firebase": "firebase emulators:start --only functions,firestore,auth",
+    "watch:site": "cd ./src/b2b-site/ && npm run dev",
+    "watch:vendors": "cd ./src/vendors/ && flask --debug run",
+    "dev": "concurrently -kill-others  \"npm:watch:*\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

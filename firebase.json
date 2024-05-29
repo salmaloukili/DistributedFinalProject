@@ -5,18 +5,7 @@
   },
   "functions": [
     {
-      "source": "functions/utils",
-      "codebase": "functions_utils",
-      "runtime": "python310",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    },
-    {
-      "source": "functions/api",
+      "source": "src/api",
       "codebase": "functions_api",
       "ignore": [
         "node_modules",
@@ -33,7 +22,7 @@
   "hosting": [
     {
       "target": "b2b-site",
-      "public": "sites/b2b-site/dist",
+      "public": "src/b2b-site/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
