@@ -6,6 +6,7 @@
     "watch:firebase": "firebase emulators:start --only functions,firestore,auth",
     "watch:site": "cd ./src/b2b-site/ && npm run dev",
     "watch:vendors": "cd ./src/vendors/ && flask --debug run",
+    "watch:api": "cd ./src/api/ && npm run build:watch",
     "dev": "concurrently -kill-others  \"npm:watch:*\""
   },
   "devDependencies": {
