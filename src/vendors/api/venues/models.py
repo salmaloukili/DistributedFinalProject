@@ -2,6 +2,7 @@ import random
 from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_rpc
 from flask_security.utils import hash_password
 from ..models import db, fake, FunctionDefault, BaseModel
+import datetime
 
 
 class Venue(BaseModel):
@@ -23,31 +24,48 @@ class Event(BaseModel):
     max_price = FunctionDefault(db.Float, default=lambda: random.randint(50, 100))
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
     date = FunctionDefault(
-        db.Date, default=lambda: fake.date_between(start_date="-1y", end_date="today")
+        db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
     )
 
-    @jsonapi_rpc(http_methods=["POST"])
-    def buy_ticket(self, user_id: str):
-        """
-        pageable: false
-        args:
-            user_id: The Firebase user ID
-        """
+    @jsonapi_rpc(http_methods=["GET"])
+    def get_price(self):
         capacity = Venue.query.get(self.venue_id).capacity
         ticket_count = Ticket.query.count()
 
         if capacity > ticket_count:
             raise ValidationError("Event is fully booked.")
 
-        ticket = Ticket(user_id=user_id, event_id=self.id, price=self.max_price)
+        price = round(self.max_price * (capacity / ticket_count))
 
-        self.max_price = round(self.max_price * (capacity / ticket_count))
+        return price
+
+    @jsonapi_rpc(http_methods=["POST"])
+    def reserve_ticket(self, user_id: str):
+        """
+        pageable: false
+        args:
+            user_id: The Firebase user ID
+        """
+        capacity = Venue.query.get(self.venue_id).capacity
+        ticket_count = Ticket.query.filter(Event.id == self.id).count()
+
+        if capacity > ticket_count:
+            raise ValidationError("Event is fully booked.")
+
+        price = round(self.max_price * (capacity / ticket_count))
+        ticket = Ticket(
+            user_id=user_id,
+            event_id=self.id,
+            price=price,
+            sold_date=datetime.date.today(),
+            status="reserved",
+        )
         return SAFRSFormattedResponse(ticket)
 
 
 class Ticket(BaseModel):
     __tablename__ = "tickets"
-    http_methods = ["get", "delete"]
+    http_methods = ["get", "delete", "patch"]
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
