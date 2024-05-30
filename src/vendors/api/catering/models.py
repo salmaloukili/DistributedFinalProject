@@ -1,7 +1,5 @@
-import datetime
-from email.policy import default
 import random
-from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_rpc
+from safrs import ValidationError
 from ..models import db, fake, FunctionDefault, BaseModel
 
 
@@ -10,7 +8,9 @@ class Menu(BaseModel):
     http_methods = ["get", "options"]
 
     id = db.Column(db.Integer, primary_key=True)
-    meal = db.relationship("Meal", back_populates="menu")
+    meals = db.relationship(
+        "Meal", back_populates="menu"
+    )
     limit = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
     food = FunctionDefault(db.String(100), default=fake.catch_phrase)
     drink = FunctionDefault(db.String(100), default=fake.catch_phrase)
@@ -23,9 +23,9 @@ class Meal(BaseModel):
     __tablename__ = "meals"
 
     id = db.Column(db.Integer, primary_key=True)
-    customer_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     menu_id = db.Column(db.Integer, db.ForeignKey("menus.id"), nullable=False)
-    menu = db.relationship("Menu", back_populates="meal")
+    menu = db.relationship("Menu", back_populates="meals")
     meal_date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
     )

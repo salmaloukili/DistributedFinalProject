@@ -13,7 +13,7 @@ class Venue(BaseModel):
     name = FunctionDefault(db.String(100), default=fake.company)
     location = FunctionDefault(db.String(200), default=fake.address)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(50, 500))
-    event = db.relationship("Event", back_populates="venue")
+    events = db.relationship("Event", back_populates="venue")
 
 
 class Event(BaseModel):
@@ -22,8 +22,8 @@ class Event(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey("venues.id"), nullable=False)
-    venue = db.relationship("Venue", back_populates="event")
-    ticket = db.relationship("Ticket", back_populates="event")
+    venue = db.relationship("Venue", back_populates="events")
+    tickets = db.relationship("Ticket", back_populates="event")
 
     max_price = FunctionDefault(db.Float, default=lambda: random.randint(50, 100))
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
@@ -45,7 +45,7 @@ class Ticket(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
-    event = db.relationship("Event", back_populates="ticket")
+    event = db.relationship("Event", back_populates="tickets")
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )

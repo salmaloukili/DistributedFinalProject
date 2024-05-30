@@ -11,7 +11,7 @@ class Bus(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     model = FunctionDefault(db.String(100), default=fake.company)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
-    schedule = db.relationship("Schedule", back_populates="bus")
+    schedules = db.relationship("Schedule", back_populates="bus")
 
 
 class Schedule(BaseModel):
@@ -19,8 +19,8 @@ class Schedule(BaseModel):
     http_methods = ["get", "options"]
     id = db.Column(db.Integer, primary_key=True)
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=False)
-    bus = db.relationship("Bus", back_populates="schedule")
-    seat = db.relationship("Seat", back_populates="schedule")
+    bus = db.relationship("Bus", back_populates="schedules")
+    seats = db.relationship("Seat", back_populates="schedule")
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )
@@ -35,9 +35,9 @@ class Schedule(BaseModel):
 class Seat(BaseModel):
     __tablename__ = "seats"
     id = db.Column(db.Integer, primary_key=True)
-    passenger_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     schedule_id = db.Column(db.Integer, db.ForeignKey("schedules.id"), nullable=False)
-    schedule = db.relationship("Schedule", back_populates="seat")
+    schedule = db.relationship("Schedule", back_populates="seats")
     sold_date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1y", end_date="now")
     )

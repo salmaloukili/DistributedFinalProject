@@ -25,6 +25,7 @@ const venueVendor = new RecordSchema({
         max_price: { type: "number" },
         name: { type: "string" },
         date: { type: "datetime" },
+        price: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -37,6 +38,7 @@ const venueVendor = new RecordSchema({
         price: { type: "number" },
         sold_date: { type: "datetime" },
         status: { type: "string" },
+        user_id: { type: "string" },
         ...base.attributes,
       },
       relationships: {
@@ -51,6 +53,8 @@ const caterVendor = new RecordSchema({
     Menu: {
       attributes: {
         food: { type: "string" },
+        drink: { type: "string" },
+        limit: { type: "number" },
         price: { type: "number" },
         ...base.attributes,
       },
@@ -62,6 +66,7 @@ const caterVendor = new RecordSchema({
       attributes: {
         meal_date: { type: "datetime" },
         status: { type: "string" },
+        user_id: { type: "string" },
         ...base.attributes,
       },
       relationships: {
@@ -85,9 +90,9 @@ const transportVendor = new RecordSchema({
     },
     Schedule: {
       attributes: {
-        departure_time: { type: "datetime" },
-        arrival_time: { type: "datetime" },
-        destination: { type: "string" },
+        departure_date: { type: "datetime" },
+        origin: { type: "string" },
+        price: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -97,9 +102,9 @@ const transportVendor = new RecordSchema({
     },
     Seat: {
       attributes: {
-        price: { type: "number" },
         sold_date: { type: "datetime" },
         status: { type: "string" },
+        user_id: { type: "string" },
         ...base.attributes,
       },
       relationships: {
