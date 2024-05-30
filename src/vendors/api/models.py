@@ -5,12 +5,21 @@ from safrs import SAFRSBase
 from flask_security.utils import hash_password
 from flask_security import RoleMixin, UserMixin
 from faker import Faker
+from faker.providers import company
+from faker_food import FoodProvider
+from faker_music import MusicProvider
+from faker_vehicle import VehicleProvider
+
 import random
 
 random.seed(1)
 Faker.seed(1)
+fake = Faker('nl_BE')
+fake.add_provider(FoodProvider)
+fake.add_provider(company)
+fake.add_provider(MusicProvider)
+fake.add_provider(VehicleProvider)
 
-fake = Faker()
 db = SQLAlchemy()
 
 

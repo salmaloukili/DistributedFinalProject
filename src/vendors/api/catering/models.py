@@ -12,8 +12,9 @@ class Menu(BaseModel):
         "Meal", back_populates="menu"
     )
     limit = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
-    food = FunctionDefault(db.String(100), default=fake.catch_phrase)
-    drink = FunctionDefault(db.String(100), default=fake.catch_phrase)
+    food = FunctionDefault(db.String(100), default=fake.dish)
+    description = FunctionDefault(db.String(500), default=fake.dish_description)
+    drink = FunctionDefault(db.String(100), default=lambda: fake.fruit() + " Juice")
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )

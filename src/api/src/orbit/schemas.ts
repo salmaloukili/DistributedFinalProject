@@ -24,6 +24,7 @@ const venueVendor = new RecordSchema({
       attributes: {
         max_price: { type: "number" },
         name: { type: "string" },
+        genre: { type: "string" },
         date: { type: "datetime" },
         price: { type: "number" },
         ...base.attributes,
@@ -53,6 +54,7 @@ const caterVendor = new RecordSchema({
     Menu: {
       attributes: {
         food: { type: "string" },
+        description: { type: "string" },
         drink: { type: "string" },
         limit: { type: "number" },
         price: { type: "number" },

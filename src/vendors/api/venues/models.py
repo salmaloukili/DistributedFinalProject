@@ -1,8 +1,6 @@
 import random
-from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_attr
-from flask_security.utils import hash_password
+from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
-import datetime
 
 
 class Venue(BaseModel):
@@ -27,6 +25,7 @@ class Event(BaseModel):
 
     max_price = FunctionDefault(db.Float, default=lambda: random.randint(50, 100))
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
+    genre = FunctionDefault(db.String(100), default=fake.music_genre)
     date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
     )

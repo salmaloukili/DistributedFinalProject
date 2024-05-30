@@ -1,15 +1,13 @@
-import datetime
 import random
-
-from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_rpc
+from safrs import ValidationError
 from ..models import db, fake, FunctionDefault, BaseModel
 
 
 class Bus(BaseModel):
-    __tablename__ = "buses"
+    __tablename__ = "buss"
     http_methods = ["get", "options"]
     id = db.Column(db.Integer, primary_key=True)
-    model = FunctionDefault(db.String(100), default=fake.company)
+    model = FunctionDefault(db.String(100), default=fake.vehicle_year_make_model)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
     schedules = db.relationship("Schedule", back_populates="bus")
 
@@ -18,7 +16,7 @@ class Schedule(BaseModel):
     __tablename__ = "schedules"
     http_methods = ["get", "options"]
     id = db.Column(db.Integer, primary_key=True)
-    bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=False)
+    bus_id = db.Column(db.Integer, db.ForeignKey("buss.id"), nullable=False)
     bus = db.relationship("Bus", back_populates="schedules")
     seats = db.relationship("Seat", back_populates="schedule")
     price = FunctionDefault(
