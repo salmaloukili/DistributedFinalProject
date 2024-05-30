@@ -2,4 +2,15 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 const db = admin.firestore();
-export default db;
+const menuRef = db.collection("menus");
+const mealRef = db.collection("meals");
+
+const busRef = db.collection("buses");
+const scheduleRef = db.collection("schedules");
+const seatRef = db.collection("seats");
+
+const venueRef = db.collection("venues");
+const eventRef = db.collection("events");
+const ticketRef = db.collection("tickets");
+
+export {db, menuRef, mealRef, busRef, scheduleRef, seatRef, venueRef, eventRef, ticketRef};

@@ -1,19 +1,9 @@
 import * as functions from "firebase-functions";
 import { faker } from "@faker-js/faker";
-import db from "../firebase";
+import * as base from "../firebase";
 
-const batch = db.batch();
+const batch = base.db.batch();
 
-const menuRef = db.collection("menus");
-const mealRef = db.collection("meals");
-
-const busRef = db.collection("buses");
-const scheduleRef = db.collection("schedules");
-const seatRef = db.collection("seats");
-
-const venueRef = db.collection("venues");
-const eventRef = db.collection("events");
-const ticketRef = db.collection("tickets");
 
 const createMenu = () => {
   return {
@@ -92,11 +82,11 @@ exports.buses = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
     for (let i = 0; i < faker.datatype.number({ min: 2, max: 4 }); i++) {
-      const busDoc = busRef.doc();
+      const busDoc = base.busRef.doc();
       batch.set(busDoc, createBus());
 
       for (let j = 0; j < faker.datatype.number({ min: 2, max: 8 }); j++) {
-        const scheduleDoc = scheduleRef.doc();
+        const scheduleDoc = base.scheduleRef.doc();
         batch.set(scheduleDoc, createSchedule(busDoc.id));
 
         for (
@@ -108,7 +98,7 @@ exports.buses = functions
           });
           k++
         ) {
-          const seatDoc = seatRef.doc();
+          const seatDoc = base.seatRef.doc();
           batch.set(seatDoc, createSeat(scheduleDoc.id));
         }
       }
@@ -122,11 +112,11 @@ exports.venues = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
     for (let i = 0; i < faker.datatype.number({ min: 2, max: 4 }); i++) {
-      const venueDoc = venueRef.doc();
+      const venueDoc = base.venueRef.doc();
       batch.set(venueDoc, createVenue());
 
       for (let j = 0; j < faker.datatype.number({ min: 2, max: 8 }); j++) {
-        const eventDoc = eventRef.doc();
+        const eventDoc = base.eventRef.doc();
         batch.set(eventDoc, createEvent(venueDoc.id));
 
         for (
@@ -138,7 +128,7 @@ exports.venues = functions
           });
           k++
         ) {
-          const ticketDoc = ticketRef.doc();
+          const ticketDoc = base.ticketRef.doc();
           batch.set(ticketDoc, createTicket(eventDoc.id));
         }
       }
@@ -153,11 +143,11 @@ exports.catering = functions
   .https.onRequest(async (req, res) => {
     // Create menus and meals
     for (let i = 0; i < faker.datatype.number({ min: 4, max: 8 }); i++) {
-      const menuDoc = menuRef.doc();
+      const menuDoc = base.menuRef.doc();
       batch.set(menuDoc, createMenu());
 
       for (let j = 0; j < faker.datatype.number({ min: 0, max: 10 }); j++) {
-        const mealDoc = mealRef.doc();
+        const mealDoc = base.mealRef.doc();
         batch.set(mealDoc, createMeal(menuDoc.id));
       }
     }
