@@ -43,6 +43,7 @@
     "react-hook-form": "^7.47.0",
     "react-modal": "^3.16.1",
     "react-router-dom": "^6.16.0",
+    "react-seatmap": "^0.1.2",
     "simplebar-react": "^3.2.4"
   },
   "devDependencies": {

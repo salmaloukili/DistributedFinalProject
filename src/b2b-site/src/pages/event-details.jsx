@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { events } from 'src/_mock/events';
-import { Container, Typography, Button, Modal, Box, Stack } from '@mui/material';
+import { Container, Typography, Button, Modal, Box, Stack, Card, CardMedia, CardContent, Grid } from '@mui/material';
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -76,11 +76,48 @@ export default function EventDetails() {
 
   return (
     <Container>
-      <Typography variant="h4">{eventDetail.name}</Typography>
-      <Typography variant="body1">{eventDetail.description}</Typography>
-      <Typography variant="body1">{eventDetail.date}</Typography>
-      <Typography variant="body1">{eventDetail.location}</Typography>
-      <Button onClick={openModal}>Get Package Deal</Button>
+      <Card>
+        <CardMedia
+          component="img"
+          height="300"
+          image={eventDetail.image}
+          alt={eventDetail.name}
+        />
+        <CardContent>
+          <Typography variant="h4" gutterBottom>{eventDetail.name}</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={8}>
+              <Typography variant="body1" paragraph>{eventDetail.description}</Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Date: {eventDetail.date}
+              </Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Location: {eventDetail.location}
+              </Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Address: Av. Victor Rousseau 208, 1190 Forest
+              </Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Opening Doors Time: 19h
+              </Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Price: {eventDetail.priceRange}
+              </Typography>
+              
+            </Grid>
+            <Grid item xs={12} sm={4} display="flex" justifyContent="flex-end" alignItems="center">
+              <Button
+                onClick={openModal}
+                variant="contained"
+                size="large"
+                sx={{ mt: 2, ml: 2, fontSize: '1.2rem' }}
+              >
+                Get Package Deal
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
       <Modal open={modalOpen} onClose={closeModal}>
         <Box sx={{ p: 4, backgroundColor: 'white', m: 'auto', mt: 10, borderRadius: 2 }}>
           {renderModalContent()}
