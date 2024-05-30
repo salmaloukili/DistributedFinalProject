@@ -48,23 +48,13 @@ const venueVendor = new RecordSchema({
 
 const caterVendor = new RecordSchema({
   models: {
-    Dinner: {
-      attributes: {
-        name: { type: "string" },
-        ...base.attributes,
-      },
-      relationships: {
-        menus: { kind: "hasMany", type: "Menu", inverse: "dinner" },
-      },
-    },
     Menu: {
       attributes: {
-        item: { type: "string" },
+        food: { type: "string" },
         price: { type: "number" },
         ...base.attributes,
       },
       relationships: {
-        dinner: { kind: "hasOne", type: "Dinner", inverse: "menus" },
         meals: { kind: "hasMany", type: "Meal", inverse: "menu" },
       },
     },

@@ -47,10 +47,6 @@ def setup_database(app):
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
-            safrs.expose_object(
-                model,
-                method_decorators=[auth.login_required],
-            )
 
         for model in transport.models:
             admin.add_view(api.AdminModelView(model, api.db.session))

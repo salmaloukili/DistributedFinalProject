@@ -53,9 +53,8 @@ roles_employees = db.Table(
 )
 
 
-class Role(SAFRSBase, db.Model, RoleMixin):
+class Role(db.Model, RoleMixin):
     __tablename__ = "roles"
-    http_methods = []
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
@@ -64,9 +63,8 @@ class Role(SAFRSBase, db.Model, RoleMixin):
         return self.name
 
 
-class Employee(BaseModel, UserMixin):
+class Employee(db.Model, UserMixin):
     __tablename__ = "employees"
-    http_methods = []
     id = db.Column(db.Integer, primary_key=True)
     first_name = FunctionDefault(db.String(50), default=fake.first_name)
     last_name = FunctionDefault(db.String(50), default=fake.last_name)

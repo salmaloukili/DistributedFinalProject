@@ -1,5 +1,5 @@
 import random
-from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_rpc
+from safrs import SAFRSFormattedResponse, ValidationError, jsonapi_attr
 from flask_security.utils import hash_password
 from ..models import db, fake, FunctionDefault, BaseModel
 import datetime
@@ -7,6 +7,8 @@ import datetime
 
 class Venue(BaseModel):
     __tablename__ = "venues"
+    http_methods = ["get", "options"]
+
     id = db.Column(db.Integer, primary_key=True)
     name = FunctionDefault(db.String(100), default=fake.company)
     location = FunctionDefault(db.String(200), default=fake.address)
@@ -16,6 +18,8 @@ class Venue(BaseModel):
 
 class Event(BaseModel):
     __tablename__ = "events"
+    http_methods = ["get", "options"]
+
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey("venues.id"), nullable=False)
     venue = db.relationship("Venue", back_populates="event")
@@ -27,46 +31,17 @@ class Event(BaseModel):
         db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
     )
 
-    @jsonapi_rpc(http_methods=["GET"])
-    def get_price(self):
-        capacity = Venue.query.get(self.venue_id).capacity
-        ticket_count = Ticket.query.count()
-
-        if capacity > ticket_count:
-            raise ValidationError("Event is fully booked.")
-
-        price = round(self.max_price * (capacity / ticket_count))
+    @jsonapi_attr
+    def price(self):
+        venue: Venue = Venue.query.filter(Venue.id == self.venue_id).one()
+        ticket_count = Ticket.query.filter(Ticket.event_id == self.id).count()
+        price = round(self.max_price * ((ticket_count + 1) / (venue.capacity)))
 
         return price
-
-    @jsonapi_rpc(http_methods=["POST"])
-    def reserve_ticket(self, user_id: str):
-        """
-        pageable: false
-        args:
-            user_id: The Firebase user ID
-        """
-        capacity = Venue.query.get(self.venue_id).capacity
-        ticket_count = Ticket.query.filter(Event.id == self.id).count()
-
-        if capacity > ticket_count:
-            raise ValidationError("Event is fully booked.")
-
-        price = round(self.max_price * (capacity / ticket_count))
-        ticket = Ticket(
-            user_id=user_id,
-            event_id=self.id,
-            price=price,
-            sold_date=datetime.date.today(),
-            status="reserved",
-        )
-        return SAFRSFormattedResponse(ticket)
 
 
 class Ticket(BaseModel):
     __tablename__ = "tickets"
-    http_methods = ["get", "delete", "patch"]
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
@@ -82,6 +57,20 @@ class Ticket(BaseModel):
         default=lambda: random.choice(["reserved", "bought"]),
         nullable=False,
     )
+
+    @classmethod
+    def _s_post(cls, *args, **kwargs):
+        print(kwargs)
+        event: Event = Event.query.get(kwargs["event_id"])
+        if not event:
+            raise ValidationError("Wrong event_id")
+        venue: Venue = Venue.query.get(event.venue_id)
+        ticket_count = Ticket.query.filter(Ticket.event == event).count()
+        if not venue or venue.capacity < ticket_count:
+            raise ValidationError("No more space in venue.")
+
+        result = cls(*args, **kwargs)
+        return result
 
 
 def populate_database():

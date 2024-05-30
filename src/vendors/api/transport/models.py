@@ -7,6 +7,7 @@ from ..models import db, fake, FunctionDefault, BaseModel
 
 class Bus(BaseModel):
     __tablename__ = "buses"
+    http_methods = ["get", "options"]
     id = db.Column(db.Integer, primary_key=True)
     model = FunctionDefault(db.String(100), default=fake.company)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
@@ -15,6 +16,7 @@ class Bus(BaseModel):
 
 class Schedule(BaseModel):
     __tablename__ = "schedules"
+    http_methods = ["get", "options"]
     id = db.Column(db.Integer, primary_key=True)
     bus_id = db.Column(db.Integer, db.ForeignKey("buses.id"), nullable=False)
     bus = db.relationship("Bus", back_populates="schedule")
@@ -29,33 +31,9 @@ class Schedule(BaseModel):
     )
     origin = FunctionDefault(db.String(100), default=fake.city)
 
-    @jsonapi_rpc(http_methods=["POST"])
-    def reserve_seat(self, user_id: str):
-        """
-        pageable: false
-        args:
-            user_id: The Firebase user ID
-        """
-        capacity = Bus.query.get(self.bus_id).capacity
-        seat_count = Seat.query.filter(Schedule.id == self.id).count()
-
-        if capacity > seat_count:
-            raise ValidationError("Bus is fully booked.")
-
-        ticket = Seat(
-            user_id=user_id,
-            event_id=self.id,
-            price=self.price,
-            sold_date=datetime.date.today(),
-            status="reserved",
-        )
-        return SAFRSFormattedResponse(ticket)
-
 
 class Seat(BaseModel):
     __tablename__ = "seats"
-    http_methods = ["get", "delete", "patch"]
-
     id = db.Column(db.Integer, primary_key=True)
     passenger_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     schedule_id = db.Column(db.Integer, db.ForeignKey("schedules.id"), nullable=False)
@@ -68,6 +46,20 @@ class Seat(BaseModel):
         default=lambda: random.choice(["reserved", "bought"]),
         nullable=False,
     )
+
+    @classmethod
+    def _s_post(cls, *args, **kwargs):
+        print(kwargs)
+        schedule: Schedule = Schedule.query.get(kwargs["schedule_id"])
+        if not schedule:
+            raise ValidationError("Wrong schedule_id")
+        bus: Bus = Bus.query.get(schedule.bus_id)
+        seat_count = Seat.query.filter(Seat.schedule == schedule).count()
+        if not bus or bus.capacity < seat_count:
+            raise ValidationError("No more space in bus.")
+
+        result = cls(*args, **kwargs)
+        return result
 
 
 def populate_database():
