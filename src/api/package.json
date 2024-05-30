@@ -15,6 +15,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@orbit/jsonapi": "^0.17.1",
     "@orbit/memory": "^0.17.2",
     "@orbit/records": "^0.17.0",
