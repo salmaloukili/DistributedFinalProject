@@ -1,20 +1,28 @@
 import JSONAPISource from "@orbit/jsonapi";
 import { caterVendor, transportVendor, venueVendor } from "./schemas";
 
-const source = new JSONAPISource({
+const caterSource = new JSONAPISource({
   schema: caterVendor,
   name: "remote",
   host: "http://127.0.0.1:5000/",
   namespace: "api",
 });
+const transportSource = new JSONAPISource({
+  schema: transportVendor,
+  name: "remote",
+  host: "http://127.0.0.1:5000/",
+  namespace: "api",
+});
+const venueSource = new JSONAPISource({
+  schema: venueVendor,
+  name: "remote",
+  host: "http://127.0.0.1:5000/",
+  namespace: "api",
+});
 
-interface Host {
-  kind: "catering" | "transport" | "venues";
-  url: string;
-}
 const sources = {
-  catering: [source],
-  transport: [source],
-  venues: [source],
+  catering: [caterSource],
+  transport: [transportSource],
+  venues: [venueSource],
 };
-export default source;
+export default sources;
