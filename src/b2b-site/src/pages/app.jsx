@@ -9,7 +9,8 @@ import { getCallable } from 'src/utils/firebase';
 export default function AppPage() {
   const [greeting, setGreeting] = useState(null);
   useEffect(() => {
-    getCallable('getGreeting')().then((res) => {
+    const getGreeting = getCallable('getGreeting');
+    getGreeting({data: "nico"}).then((res) => {
       setGreeting(res.data);
     });
   }, [greeting]);
