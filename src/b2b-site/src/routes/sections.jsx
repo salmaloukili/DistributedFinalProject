@@ -11,6 +11,9 @@ export const UserPage = lazy(() => import('src/pages/user'));
 export const LoginPage = lazy(() => import('src/pages/login'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
+export const EventDetailsPage = lazy(() => import('src/pages/event-details'));
+
+
 
 // ----------------------------------------------------------------------
 const dashboard = (
@@ -45,6 +48,7 @@ export default function Router() {
           <Route element={<UserPage />} path='user' />
           <Route element={<ProductsPage />} path='products' />
           <Route element={<BlogPage />} path='blog' />
+          <Route element={<EventDetailsPage />} path="event/:id" /> 
         </Route>
         <Route element={<Navigate to="/" replace />} path='login' />
       </>
@@ -56,6 +60,8 @@ export default function Router() {
 
       <Route element={<Page404 />} path='404' />
       <Route element={<Navigate to="/404" replace />} path='*' />
+
+  
     </Routes>
   )
 }
