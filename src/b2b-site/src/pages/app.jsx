@@ -8,9 +8,10 @@ import { getCallable } from 'src/utils/firebase';
 
 export default function AppPage() {
   const [greeting, setGreeting] = useState(null);
+  const dateString = 'Tue Jun 04 2024 05:42:06 GMT+0200 (Central European Summer Time)';
   useEffect(() => {
-    const getGreeting = getCallable('getGreeting');
-    getGreeting({data: "nico"}).then((res) => {
+    getCallable('endpoints-getFood')().then((res) => {
+      console.log(res.data);
       setGreeting(res.data);
     });
   }, [greeting]);
