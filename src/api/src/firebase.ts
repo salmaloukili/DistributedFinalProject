@@ -14,5 +14,18 @@ const eventRef = db.collection("events");
 const ticketRef = db.collection("tickets");
 
 const venueVendorRef = db.collection("venueVendors")
+const vendorRef = db.collection("vendors");
 
-export {db, menuRef, mealRef, busRef, scheduleRef, seatRef, venueRef, eventRef, ticketRef, venueVendorRef};
+export {
+  db,
+  menuRef,
+  mealRef,
+  busRef,
+  scheduleRef,
+  seatRef,
+  venueRef,
+  eventRef,
+  ticketRef,
+  venueVendorRef,
+  vendorRef,
+};
