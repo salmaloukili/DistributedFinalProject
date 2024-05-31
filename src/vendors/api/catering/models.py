@@ -24,7 +24,9 @@ class Meal(BaseModel):
     __tablename__ = "meals"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
+    user_id = FunctionDefault(
+        db.String(100), default=fake.uuid4, nullable=False, unique=True
+    )
     menu_id = db.Column(db.Integer, db.ForeignKey("menus.id"), nullable=False)
     menu = db.relationship("Menu", back_populates="meals")
     meal_date = FunctionDefault(
