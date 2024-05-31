@@ -33,7 +33,7 @@ class Schedule(BaseModel):
 class Seat(BaseModel):
     __tablename__ = "seats"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False, unique=True)
     schedule_id = db.Column(db.Integer, db.ForeignKey("schedules.id"), nullable=False)
     schedule = db.relationship("Schedule", back_populates="seats")
     sold_date = FunctionDefault(

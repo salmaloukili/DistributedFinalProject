@@ -1,3 +1,5 @@
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Index
 import vendors.api.venues as venues
 import vendors.api.transport as transport
 import vendors.api.catering as catering
@@ -16,6 +18,14 @@ def create_app(app):
     app.register_blueprint(catering.bp)
     app.register_blueprint(transport.bp)
     app.register_blueprint(bp)
+
+
+def create_index(model, db: SQLAlchemy):
+    idx = Index("idx_modified_at" + model.__name__, model.__table__.c.modified_at)
+    try:
+        idx.create(bind=db.engine)
+    except:
+        return
 
 
 def setup_database(app):
@@ -49,6 +59,7 @@ def setup_database(app):
             admin.add_view(api.AdminModelView(model, api.db.session))
 
         for model in transport.models:
+            create_index(model, api.db)
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
                 model,
@@ -57,6 +68,7 @@ def setup_database(app):
             )
 
         for model in venues.models:
+            create_index(model, api.db)
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
                 model,
@@ -65,6 +77,7 @@ def setup_database(app):
             )
 
         for model in catering.models:
+            create_index(model, api.db)
             admin.add_view(api.AdminModelView(model, api.db.session))
             safrs.expose_object(
                 model,

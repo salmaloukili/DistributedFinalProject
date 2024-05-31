@@ -1,3 +1,4 @@
+import datetime
 import random
 from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
@@ -42,7 +43,9 @@ class Event(BaseModel):
 class Ticket(BaseModel):
     __tablename__ = "tickets"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
+    user_id = FunctionDefault(
+        db.String(100), default=fake.uuid4, nullable=False, unique=True
+    )
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
     event = db.relationship("Event", back_populates="tickets")
     price = FunctionDefault(
@@ -67,8 +70,10 @@ class Ticket(BaseModel):
         ticket_count = Ticket.query.filter(Ticket.event == event).count()
         if not venue or venue.capacity < ticket_count:
             raise ValidationError("No more space in venue.")
-
+        kwargs["price"] = event.price
         result = cls(*args, **kwargs)
+        event.modified_at = datetime.datetime.now()
+        db.session.commit()
         return result
 
 

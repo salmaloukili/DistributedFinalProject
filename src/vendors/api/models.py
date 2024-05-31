@@ -14,7 +14,7 @@ import random
 
 random.seed(1)
 Faker.seed(1)
-fake = Faker('nl_BE')
+fake = Faker("nl_BE")
 fake.add_provider(FoodProvider)
 fake.add_provider(company)
 fake.add_provider(MusicProvider)
@@ -53,6 +53,13 @@ class BaseModel(SAFRSBase, db.Model):
         default=lambda: datetime.datetime.now(datetime.timezone.utc),
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
+
+    @classmethod
+    def _s_post(cls, *args, **kwargs):
+        kwargs.pop("modified_at", None)
+        kwargs.pop("created_at", None)
+        result = cls(*args, **kwargs)
+        return result
 
 
 roles_employees = db.Table(
