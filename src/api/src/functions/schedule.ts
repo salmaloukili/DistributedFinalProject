@@ -36,9 +36,9 @@ exports.queryTransport = functions
   .https.onRequest(async (req, res) => {
     const data = [];
     let query = sources.catering[0].query(
-      (q) => q.findRecords("Menu")
+      (q) => q.findRecords("Menu").sort({ attribute: "modified_at" })
       // .page({ offset: 0, limit: 1 })
-      // .options({ include: ["events"] })
+      .options({ include: ["meals"] })
     );
     data[0] = await query;
 
@@ -77,6 +77,39 @@ exports.queryVenues = functions
         .findRecords("Ticket")
         // .page({ offset: 0, limit: 1 })
         .options({ include: ["event"] })
+    );
+    data[2] = await query;
+
+    res.json(data);
+  });
+
+
+exports.queryUpdatedCatering = functions
+  .region("europe-west1")
+  .https.onRequest(async (req, res) => {
+    const data = [];
+    let query = sources.transport[0].query(
+      (q) => q.findRecords("Bus")
+      // .sort({ attribute: "modified_at", order: "descending" })
+      // .page({ offset: 0, limit: 2 })
+      // .options({ include: ["events"] })
+    );
+    data[0] = await query;
+
+    query = sources.transport[0].query((q) =>
+      q
+        .findRecords("Schedule")
+        // .page({ offset: 0, limit: 1 })
+        .options({ include: ["bus"] })
+    );
+    data[1] = await query;
+
+    query = sources.transport[0].query((q) =>
+      q
+        .findRecords("Seat")
+        .sort({ attribute: "modified_at", order: "descending" })
+        .page({ offset: 0, limit: 1 })
+        .options({ include: ["schedule"] })
     );
     data[2] = await query;
 
