@@ -54,6 +54,14 @@ class BaseModel(SAFRSBase, db.Model):
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
 
+    @classmethod
+    def _s_post(cls, *args, **kwargs):
+        kwargs.pop("modified_at", None)
+        kwargs.pop("created_at", None)
+        result = cls(*args, **kwargs)
+        return result
+
+
 roles_employees = db.Table(
     "roles_employees",
     db.Column("employees_id", db.Integer(), db.ForeignKey("employees.id")),
