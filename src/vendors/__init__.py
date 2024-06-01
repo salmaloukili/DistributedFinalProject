@@ -13,9 +13,9 @@ from .auth import auth
 
 
 def apply_route(blueprint: Blueprint):
-    @blueprint.route("/img/<path>")
-    def get_image(path):
-        return send_file(blueprint.static_url_path + "/" + path, mimetype="image/gif")
+    @blueprint.route("/img/<int:number>")
+    def get_image(number: int):
+        return send_file(f"{blueprint.static_url_path}/{number}.webp", mimetype="image/gif")
 
 
 def create_app(app):
@@ -24,13 +24,12 @@ def create_app(app):
         venues.bp,
         catering.bp,
         transport.bp,
+        bp
     ]
     
     for _bp in blueprints:
         apply_route(_bp)
         app.register_blueprint(_bp)
-
-    app.register_blueprint(bp)
 
 
 def create_index(model, db: SQLAlchemy):

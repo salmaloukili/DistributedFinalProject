@@ -2,7 +2,11 @@ from flask import Blueprint
 from .api.models import fake
 import vendors
 
-bp = Blueprint("baseBP", "base")
+bp = Blueprint(
+    "baseBP",
+    "base",
+    static_url_path="static",
+)
 
 
 @bp.get("/populate_db")
