@@ -7,16 +7,29 @@ import vendors.api as api
 from .views import bp
 from flask_security import Security
 from flask_admin import Admin, helpers
-from flask import url_for
+from flask import url_for, send_file, Blueprint
 from safrs import SafrsApi
 from .auth import auth
 
 
+def apply_route(blueprint: Blueprint):
+    @blueprint.route("/img/<path>")
+    def get_image(path):
+        return send_file(blueprint.static_url_path + "/" + path, mimetype="image/gif")
+
+
 def create_app(app):
-    app.register_blueprint(api.bp)
-    app.register_blueprint(venues.bp)
-    app.register_blueprint(catering.bp)
-    app.register_blueprint(transport.bp)
+    blueprints = [
+        api.bp,
+        venues.bp,
+        catering.bp,
+        transport.bp,
+    ]
+    
+    for _bp in blueprints:
+        apply_route(_bp)
+        app.register_blueprint(_bp)
+
     app.register_blueprint(bp)
 
 
