@@ -24,6 +24,7 @@ export default function AppPage() {
             ...event.data,
           }));
           setEvents(fetchedEvents);
+          console.log(fetchedEvents);
           sortEvents(fetchedEvents, sortOption); // Initial sort
         } else {
           console.error('Error fetching events:', result.data.error);
