@@ -27,6 +27,7 @@ const venueVendor = new RecordSchema({
         genre: { type: "string" },
         date: { type: "datetime" },
         price: { type: "number" },
+        image_url: { type: "string" },
         ...base.attributes,
       },
       relationships: {
@@ -58,6 +59,7 @@ const caterVendor = new RecordSchema({
         drink: { type: "string" },
         limit: { type: "number" },
         price: { type: "number" },
+        image_url: { type: "string" },
         ...base.attributes,
       },
       relationships: {
@@ -84,6 +86,7 @@ const transportVendor = new RecordSchema({
       attributes: {
         model: { type: "string" },
         capacity: { type: "number" },
+        image_url: { type: "string" },
         ...base.attributes,
       },
       relationships: {
