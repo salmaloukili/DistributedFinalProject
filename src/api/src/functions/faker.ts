@@ -103,6 +103,7 @@ const createVendor = (type: string) => {
   return {
     vendor_name: faker.company.name(),
     image_url: faker.internet.url(),
+    vendor_url: faker.internet.url(),
     type: type,
     // type: faker.helpers.arrayElement(["Venue", "Transport", "Catering"]),
   };
