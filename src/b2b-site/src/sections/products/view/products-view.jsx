@@ -6,20 +6,12 @@ import Typography from '@mui/material/Typography';
 import { getCallable } from 'src/utils/firebase';
 import EventCard from '../event-card';
 import EventSort from '../event-sort';
-import EventFilters from '../event-filters';
 import EventCartWidget from '../event-cart-widget';
 
 export default function AppPage() {
   const [events, setEvents] = useState([]);
-  const [openFilter, setOpenFilter] = useState(false);
-
-  const handleOpenFilter = () => {
-    setOpenFilter(true);
-  };
-
-  const handleCloseFilter = () => {
-    setOpenFilter(false);
-  };
+  const [sortedEvents, setSortedEvents] = useState([]);
+  const [sortOption, setSortOption] = useState('dateAsc'); // Default sort option
 
   useEffect(() => {
     const getEvents = getCallable('endpoints-getEvents');
@@ -32,6 +24,7 @@ export default function AppPage() {
             ...event.data,
           }));
           setEvents(fetchedEvents);
+          sortEvents(fetchedEvents, sortOption); // Initial sort
         } else {
           console.error('Error fetching events:', result.data.error);
         }
@@ -40,6 +33,25 @@ export default function AppPage() {
         console.error('Error fetching events:', error);
       });
   }, []);
+
+  const sortEvents = (eventsToSort, sortBy) => {
+    const sorted = [...eventsToSort];
+    if (sortBy === 'priceAsc') {
+      sorted.sort((a, b) => a.max_price - b.max_price);
+    } else if (sortBy === 'priceDesc') {
+      sorted.sort((a, b) => b.max_price - a.max_price);
+    } else if (sortBy === 'dateAsc') {
+      sorted.sort((a, b) => (a.date._seconds - b.date._seconds));
+    } else if (sortBy === 'dateDesc') {
+      sorted.sort((a, b) => (b.date._seconds - a.date._seconds));
+    }
+    setSortedEvents(sorted);
+  };
+
+  const handleSortChange = (sortBy) => {
+    setSortOption(sortBy);
+    sortEvents(events, sortBy);
+  };
 
   return (
     <Container>
@@ -55,18 +67,13 @@ export default function AppPage() {
         sx={{ mb: 5 }}
       >
         <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-          <EventFilters
-            openFilter={openFilter}
-            onOpenFilter={handleOpenFilter}
-            onCloseFilter={handleCloseFilter}
-          />
-          <EventSort />
+          <EventSort onSortChange={handleSortChange} />
         </Stack>
       </Stack>
 
       <Grid container spacing={3}>
-        {events.length > 0 ? (
-          events.map((event) => (
+        {sortedEvents.length > 0 ? (
+          sortedEvents.map((event) => (
             <Grid key={event.id} xs={12} sm={6} md={3}>
               <EventCard event={event} />
             </Grid>
@@ -80,14 +87,6 @@ export default function AppPage() {
     </Container>
   );
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -145,63 +144,3 @@ export default function AppPage() {
 //   );
 // }
 
-
-
-// import { useState } from 'react';
-// import Stack from '@mui/material/Stack';
-// import Container from '@mui/material/Container';
-// import Grid from '@mui/material/Unstable_Grid2';
-// import Typography from '@mui/material/Typography';
-
-// import { events } from 'src/_mock/events'; 
-// import EventCard from '../event-card';
-// import EventSort from '../event-sort';
-// import EventFilters from '../event-filters';
-// import EventCartWidget from '../event-cart-widget';
-
-// export default function ProductsView() {
-//   const [openFilter, setOpenFilter] = useState(false);
-
-//   const handleOpenFilter = () => {
-//     setOpenFilter(true);
-//   };
-
-//   const handleCloseFilter = () => {
-//     setOpenFilter(false);
-//   };
-
-//   return (
-//     <Container>
-//       <Typography variant="h4" sx={{ mb: 5 }}>
-//         Events Near You
-//       </Typography>
-
-//       <Stack
-//         direction="row"
-//         alignItems="center"
-//         flexWrap="wrap-reverse"
-//         justifyContent="flex-end"
-//         sx={{ mb: 5 }}
-//       >
-//         <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-//           <EventFilters
-//             openFilter={openFilter}
-//             onOpenFilter={handleOpenFilter}
-//             onCloseFilter={handleCloseFilter}
-//           />
-//           <EventSort />
-//         </Stack>
-//       </Stack>
-
-//       <Grid container spacing={3}>
-//         {events.map((event) => (
-//           <Grid key={event.id} xs={12} sm={6} md={3}>
-//             <EventCard event={event} />
-//           </Grid>
-//         ))}
-//       </Grid>
-
-//       <EventCartWidget />
-//     </Container>
-//   );
-// }
