@@ -28,6 +28,7 @@ const venueVendor = new RecordSchema({
         date: { type: "datetime" },
         price: { type: "number" },
         image_url: { type: "string" },
+        venue_id: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -41,6 +42,7 @@ const venueVendor = new RecordSchema({
         sold_date: { type: "datetime" },
         status: { type: "string" },
         user_id: { type: "string" },
+        event_id: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -71,6 +73,7 @@ const caterVendor = new RecordSchema({
         meal_date: { type: "datetime" },
         status: { type: "string" },
         user_id: { type: "string" },
+        menu_id: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -98,6 +101,7 @@ const transportVendor = new RecordSchema({
         departure_date: { type: "datetime" },
         origin: { type: "string" },
         price: { type: "number" },
+        bus_id: { type: "number" },
         ...base.attributes,
       },
       relationships: {
@@ -110,6 +114,7 @@ const transportVendor = new RecordSchema({
         sold_date: { type: "datetime" },
         status: { type: "string" },
         user_id: { type: "string" },
+        schedule_id: { type: "number" },
         ...base.attributes,
       },
       relationships: {

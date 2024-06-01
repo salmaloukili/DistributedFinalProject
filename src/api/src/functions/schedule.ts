@@ -1,190 +1,181 @@
+// @ts-nocheck
 import * as functions from "firebase-functions";
 import sources from "../orbit/sources";
 import { JSONAPISource } from "@orbit/jsonapi";
-import admin from "firebase-admin";
+import { db, getRef } from "../firebase";
 
 interface JSONAPIParams {
   obj: string;
   time?: Date;
   include?: string[];
+  func?: Function;
 }
-
-async function getNewData(sources: JSONAPISource[], params: JSONAPIParams[]) {
-  const data: any = [];
-  for (let i = 0; i < sources.length; i++) {
-    const source = sources[i];
-    for (let j = 0; j < params.length; j++) {
-      const param = params[j];
-
-      const query = source.query((q) => {
-        const _q = q.findRecords(params[j].obj);
-        if (param.time) {
-          return _q.filter({
-            attribute: "modified_at",
-            op: "gt",
-            value: param.time.toJSON().replace("T", " "),
-          });
-        } else {
-          return _q;
+function extractID(relationships) {
+  const idsByType = {};
+  for (const key in relationships) {
+    if (relationships[key].data && Array.isArray(relationships[key].data)) {
+      relationships[key].data.forEach((item) => {
+        if (!idsByType[item.type.toLowerCase()]) {
+          idsByType[item.type.toLowerCase()] = [];
         }
+        idsByType[item.type.toLowerCase()].push(item.id);
       });
-      data.push(await query);
     }
-    console.log(data)
-    return data;
   }
+
+  return idsByType;
 }
-
-exports.queryUpdatedTransport = functions
-  .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    res.json(
-      await getNewData(sources.transport, [
-        { obj: "Bus" },
-        { obj: "Schedule" },
-        { obj: "Seat" },
-      ])
-    );
-  });
-
-exports.queryUpdatedCatering = functions
-  .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    res.json(
-      await getNewData(sources.catering, [{ obj: "Menu" }, { obj: "Meal" }])
-    );
-
-  });
-
-exports.queryUpdatedVenues = functions
-  .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    res.json(
-      await getNewData(sources.transport, [
-        { obj: "Venue" },
-        { obj: "Event" },
-        { obj: "Ticket" },
-      ])
-    );
-  });
-
-
 
 async function getData(
   sources: JSONAPISource[],
   params: JSONAPIParams[],
-  vendorType: string,
-  docId: string
-) { 
+  upload?: boolean
+) {
   const data: any = [];
-  for (let i = 0; i < sources.length; i++) {
-    const source = sources[i];
-    for (let j = 0; j < params.length; j++) {
-      const param = params[j];
-      console.log(param)
+
+  for (const source of sources) {
+    for (const param of params) {
       const query = source.query((q) => {
-        const _q = q.findRecords(params[j].obj);
+        let _q = q.findRecords(param.obj);
+        // This checks if the time is set. If it is, it will get only newer data
+        // otherwise it queries all of them
         if (param.time) {
-          return _q.filter({
+          _q = _q.filter({
             attribute: "modified_at",
             op: "gt",
             value: param.time.toJSON().replace("T", " "),
           });
-        } else {
-          return _q.options({include: param.include});
         }
+        return _q.options({ include: param.include });
       });
 
-      const result = await query;
-      console.log(result);
+      const result: any = await query;
+      const batch = db.batch();
+
+      if (upload) {
+        for (const element of result) {
+          const ref = await param.func(element, source);
+          const ids = extractID(element.relationships);
+          batch.set(ref, {
+            ...element.attributes,
+            relationships: ids,
+          });
+        }
+      }
+      await batch.commit();
       data.push(result);
-      await writeToFirestore(vendorType, param.obj, result, docId);
     }
   }
   return data;
 }
 
-async function writeToFirestore(
-  vendorType: string,
-  objType: string,
-  data: any,
-  docId: string
-) {
-  const vendorDocRef = admin.firestore().collection(vendorType).doc(docId);
-
-  for (const record of data) {
-    const recordData = {
-      ...record.attributes,
-      relationships: record.relationships,
-    };
-    await vendorDocRef.collection(objType).doc(record.id).set(recordData);
-  }
-}
-
-
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    try {
-      const vendorType = "transportVendors";
-      const docRef = admin.firestore().collection(vendorType).doc();
-      const docId = docRef.id;
-      const data = await getData(
-        sources.transport,
-        [
-          { obj: "Bus", include: ["schedules"] },
-          { obj: "Schedule", include: ["bus", "seats"] },
-          { obj: "Seat", include: ["schedule"] },
-        ],
-        vendorType,
-        docId
-      );
-      res.json(data);
-    } catch (error) {
-      console.error("Error querying transport data: ", error);
-      res.status(500).send("Internal Server Error");
-    }
+    const data = await getData(
+      sources.transport,
+      [
+        {
+          obj: "Bus",
+          include: ["schedules"],
+          func: async (doc: any, src: any) =>
+            getRef("buses", src.name).doc(doc.id),
+        },
+        {
+          obj: "Schedule",
+          include: ["bus", "seats"],
+          func: async (doc: any, src: any) =>
+            getRef("schedules", src.name, doc.attributes.bus_id).doc(doc.id),
+        },
+        {
+          obj: "Seat",
+          include: ["schedule"],
+          func: async (doc: any, src: any) => {
+            const ref = await getRef("vendors")
+              .doc(src.name)
+              .collection("buses")
+              .where("relationships.schedule", "array-contains-any", [
+                String(doc.attributes.schedule_id),
+              ])
+              .get();
+            return getRef(
+              "seats",
+              src.name,
+              ref.docs[0]?.id,
+              doc.attributes.schedule_id
+            ).doc(doc.id);
+          },
+        },
+      ],
+      true
+    );
+    res.json(data);
   });
 
 exports.queryCatering = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    try {
-      const vendorType = "caterVendors"
-      const docRef = admin.firestore().collection(vendorType).doc();
-      const docId = docRef.id;
-      const data = await getData(
-        sources.catering,
-        [
-          { obj: "Menu", include: ["meals"] },
-          { obj: "Meal", include: ["menu"] },
-        ],
-        vendorType,
-        docId
-      );
-      res.json(data);
-    } catch (error) {
-      console.error("Error querying catering data: ", error);
-      res.status(500).send("Internal Server Error");
-    }
+    const data = await getData(
+      sources.catering,
+      [
+        {
+          obj: "Menu",
+          include: ["meals"],
+          func: async (doc: any, src: any) =>
+            getRef("menus", src.name).doc(doc.id),
+        },
+        {
+          obj: "Meal",
+          include: ["menu"],
+          func: async (doc: any, src: any) =>
+            getRef("meals", src.name, doc.attributes.menu_id).doc(doc.id),
+        },
+      ],
+      true
+    );
+
+    res.json(data);
   });
 
 exports.queryVenues = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    try {
-      const vendorType = "venueVendors";
-      const docRef = admin.firestore().collection(vendorType).doc();
-      const docId = docRef.id;
-      const data = await getData(
-        sources.venues,
-        [{ obj: "Venue", include: ["events"] }, { obj: "Event", include: ["venue", "tickets"] }, { obj: "Ticket", include: ["event"] }],
-        vendorType,
-        docId
-      );
-      res.json(data);
-    } catch (error) {
-      console.error("Error querying venue data: ", error);
-      res.status(500).send("Internal Server Error");
-    }
+    const data = await getData(
+      sources.venues,
+      [
+        {
+          obj: "Venue",
+          include: ["events"],
+          func: async (doc: any, src: any) =>
+            getRef("venues", src.name).doc(doc.id),
+        },
+        {
+          obj: "Event",
+          include: ["tickets", "venue"],
+          func: async (doc: any, src: any) =>
+            getRef("events", src.name, doc.attributes.venue_id).doc(doc.id),
+        },
+        {
+          obj: "Ticket",
+          include: ["event"],
+          func: async (doc: any, src: any) => {
+            const ref = await getRef("vendors")
+              .doc(src.name)
+              .collection("venues")
+              .where("relationships.event", "array-contains-any", [
+                String(doc.attributes.event_id),
+              ])
+              .get();
+            return getRef(
+              "tickets",
+              src.name,
+              ref.docs[0].id,
+              doc.attributes.event_id
+            ).doc(doc.id);
+          },
+        },
+      ],
+      true
+    );
+    res.json(data);
   });

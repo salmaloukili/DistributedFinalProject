@@ -37,7 +37,7 @@ class FilterJSONAPIURLBuilder extends JSONAPIURLBuilder {
 const caterSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: caterVendor,
-  name: "remote",
+  name: "1BMkjSaBtyDLbtbanY18",
   host: "http://127.0.0.1:5000",
   namespace: "api/catering",
   defaultFetchSettings: {
@@ -50,7 +50,7 @@ const caterSource = new JSONAPISource({
 const transportSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: transportVendor,
-  name: "remote",
+  name: "AF8iRt7qkZfQ1cAj1D6z",
   host: "http://127.0.0.1:5000",
   namespace: "api/transport",
   defaultFetchSettings: {
@@ -63,7 +63,7 @@ const transportSource = new JSONAPISource({
 const venueSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: venueVendor,
-  name: "remote",
+  name: "PQSwnqknalhyBW8qPB2a",
   host: "http://127.0.0.1:5000",
   namespace: "api/venues",
   defaultFetchSettings: {
