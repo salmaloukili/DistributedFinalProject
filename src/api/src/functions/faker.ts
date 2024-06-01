@@ -11,6 +11,7 @@ const createMenu = () => {
     food: faker.company.catchPhrase(),
     drink: faker.company.catchPhrase(),
     description: faker.company.catchPhrase(),
+    image_url: faker.internet.url(),
     price: parseFloat(faker.commerce.price(20, 200, 2)),
     created_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
     modified_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
@@ -44,6 +45,7 @@ const createEvent = (venueId: string) => {
     max_price: faker.datatype.number({ min: 50, max: 100 }),
     name: faker.company.catchPhrase(),
     genre: faker.company.catchPhrase(),
+    image_url: faker.internet.url(),
     date: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
     created_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
     modified_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
@@ -66,6 +68,7 @@ const createBus = () => {
   return {
     model: faker.company.name(),
     capacity: faker.datatype.number({ min: 30, max: 60 }),
+    image_url: faker.internet.url(),
     created_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
     modified_at: faker.date.between(faker.date.recent(30), faker.date.soon(30)),
   };
@@ -96,126 +99,175 @@ const createSeat = (scheduleId: string) => {
   };
 };
 
-const createVenueVendor = () => {
+const createVendor = (type: string) => {
   return {
-    venue_vendor_name: faker.company.name(),
+    vendor_name: faker.company.name(),
+    image_url: faker.internet.url(),
+    type: type,
+    // type: faker.helpers.arrayElement(["Venue", "Transport", "Catering"]),
   };
 };
 
-const createCateringVendor = () => {
-  return {
-    catering_vendor_name: faker.company.name(),
-  };
-};
-
-const createTransportVendor = () => {
-  return {
-    transport_vendor_name: faker.company.name(),
-  };
-};
 
 exports.populateVenueVendors = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    for (let i = 0; i < faker.datatype.number({ min: 2, max: 4 }); i++) {
-      const venueVendorDoc = base.venueVendorRef.doc();
-      batch.set(venueVendorDoc, createVenueVendor());
 
-      for (let j = 0; j < faker.datatype.number({ min: 4, max: 6 }); j++) {
-        const venueDoc = venueVendorDoc.collection('venues').doc()
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Venue"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Venue"));
+
+      for (let j = 0; j < 4; j++) {
+        // Each vendor has 4 venues
+        const venueDoc = vendorDoc.collection("venues").doc();
         batch.set(venueDoc, createVenue());
 
-        for (let k = 0; k < faker.datatype.number({ min: 4, max: 6 }); k++) {
+        for (let k = 0; k < 3; k++) {
+          // Each venue has 3 events
           const eventDoc = venueDoc.collection("events").doc();
-          batch.set(eventDoc, createEvent(venueDoc.id));
+          batch.set(eventDoc, createEvent("abc"));
 
-          for (let l = 0; l < faker.datatype.number({ min: 5, max: 10 }); l++) {
-            const ticketDoc = eventDoc.collection("events").doc();
-            batch.set(ticketDoc, createTicket(eventDoc.id));
+          for (let l = 0; l < 3; l++) {
+            // Each event has 3 tickets
+            const ticketDoc = eventDoc.collection("tickets").doc();
+            batch.set(ticketDoc, createTicket("abc"));
           }
         }
       }
     }
 
     await batch.commit();
-    res.send("Database populated with fake data.");
+    res.send("Database populated with fake data for venue vendors.");
+  });
+
+exports.populateCateringVendors = functions
+  .region("europe-west1")
+  .https.onRequest(async (req, res) => {
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Catering"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Catering"));
+      for (let j = 0; j < 3; j++) {
+        // Each vendor has 3 menus
+        const menuDoc = vendorDoc.collection("menus").doc();
+        batch.set(menuDoc, createMenu());
+        for (let k = 0; k < 3; k++) {
+          // Each menu has 3 meals
+          const mealDoc = menuDoc.collection("meals").doc();
+          batch.set(mealDoc, createMeal("abc"));
+        }
+      }
+    }
+    await batch.commit();
+    res.send("Database populated with fake data for catering vendors.");
   });
 
 
-exports.buses = functions
+exports.populateTransportVendors = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    for (let i = 0; i < faker.datatype.number({ min: 2, max: 4 }); i++) {
-      const busDoc = base.busRef.doc();
-      batch.set(busDoc, createBus());
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Transport"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Transport"));
 
-      for (let j = 0; j < faker.datatype.number({ min: 2, max: 8 }); j++) {
-        const scheduleDoc = base.scheduleRef.doc();
-        batch.set(scheduleDoc, createSchedule(busDoc.id));
+      for (let j = 0; j < 3; j++) {
+        // Each vendor has 3 buses
+        const busDoc = vendorDoc.collection("buses").doc();
+        batch.set(busDoc, createBus());
 
-        for (
-          let k = 0;
-          k <
-          faker.datatype.number({
-            min: 0,
-            max: Math.round(100 / 2),
-          });
-          k++
-        ) {
-          const seatDoc = base.seatRef.doc();
-          batch.set(seatDoc, createSeat(scheduleDoc.id));
+        for (let k = 0; k < 3; k++) {
+          // Each bus has 3 schedules
+          const scheduleDoc = busDoc.collection("schedules").doc();
+          batch.set(scheduleDoc, createSchedule("abc"));
+
+          for (let l = 0; l < 3; l++) {
+            // Each schedule has 3 seats
+            const seatDoc = scheduleDoc.collection("seats").doc();
+            batch.set(seatDoc, createSeat("abc"));
+          }
+        }
+      }
+    }
+    await batch.commit();
+    res.send("Database populated with fake data for transport vendors.");
+  });
+
+exports.populateAllVendors = functions
+  .region("europe-west1")
+  .https.onRequest(async (req, res) => {
+    //VenueVendors
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Venue"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Venue"));
+
+      for (let j = 0; j < 4; j++) {
+        // Each vendor has 4 venues
+        const venueDoc = vendorDoc.collection("venues").doc();
+        batch.set(venueDoc, createVenue());
+
+        for (let k = 0; k < 3; k++) {
+          // Each venue has 3 events
+          const eventDoc = venueDoc.collection("events").doc();
+          batch.set(eventDoc, createEvent("abc"));
+
+          for (let l = 0; l < 3; l++) {
+            // Each event has 3 tickets
+            const ticketDoc = eventDoc.collection("tickets").doc();
+            batch.set(ticketDoc, createTicket("abc"));
+          }
         }
       }
     }
 
-    await batch.commit();
-    res.send("Database populated with fake data.");
-  });
-
-exports.venues = functions
-  .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    for (let i = 0; i < faker.datatype.number({ min: 2, max: 4 }); i++) {
-      const venueDoc = base.venueRef.doc();
-      batch.set(venueDoc, createVenue());
-
-      for (let j = 0; j < faker.datatype.number({ min: 2, max: 8 }); j++) {
-        const eventDoc = base.eventRef.doc();
-        batch.set(eventDoc, createEvent(venueDoc.id));
-
-        for (
-          let k = 0;
-          k <
-          faker.datatype.number({
-            min: 0,
-            max: Math.round(100 / 2),
-          });
-          k++
-        ) {
-          const ticketDoc = base.ticketRef.doc();
-          batch.set(ticketDoc, createTicket(eventDoc.id));
+    //Catering vendors
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Catering"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Catering"));
+      for (let j = 0; j < 3; j++) {
+        // Each vendor has 3 menus
+        const menuDoc = vendorDoc.collection("menus").doc();
+        batch.set(menuDoc, createMenu());
+        for (let k = 0; k < 3; k++) {
+          // Each menu has 3 meals
+          const mealDoc = menuDoc.collection("meals").doc();
+          batch.set(mealDoc, createMeal("abc"));
         }
       }
     }
 
-    await batch.commit();
-    res.send("Database populated with fake data.");
-  });
+    //Transport vendors
+    for (let i = 0; i < 3; i++) {
+      // Create 3 vendors of type "Transport"
+      const vendorDoc = base.vendorRef.doc();
+      batch.set(vendorDoc, createVendor("Transport"));
 
-exports.catering = functions
-  .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    // Create menus and meals
-    for (let i = 0; i < faker.datatype.number({ min: 4, max: 8 }); i++) {
-      const menuDoc = base.menuRef.doc();
-      batch.set(menuDoc, createMenu());
+      for (let j = 0; j < 3; j++) {
+        // Each vendor has 3 buses
+        const busDoc = vendorDoc.collection("buses").doc();
+        batch.set(busDoc, createBus());
 
-      for (let j = 0; j < faker.datatype.number({ min: 0, max: 10 }); j++) {
-        const mealDoc = base.mealRef.doc();
-        batch.set(mealDoc, createMeal(menuDoc.id));
+        for (let k = 0; k < 3; k++) {
+          // Each bus has 3 schedules
+          const scheduleDoc = busDoc.collection("schedules").doc();
+          batch.set(scheduleDoc, createSchedule("abc"));
+
+          for (let l = 0; l < 3; l++) {
+            // Each schedule has 3 seats
+            const seatDoc = scheduleDoc.collection("seats").doc();
+            batch.set(seatDoc, createSeat("abc"));
+          }
+        }
       }
     }
 
+
+
     await batch.commit();
-    res.send("Database populated with fake data.");
+    res.send("Database populated with fake data for ALL vendors.");
   });
+  
+
