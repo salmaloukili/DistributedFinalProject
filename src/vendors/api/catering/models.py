@@ -1,5 +1,5 @@
 import random
-from safrs import ValidationError
+from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
 
 
@@ -18,6 +18,11 @@ class Menu(BaseModel):
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )
+
+    @jsonapi_attr
+    def image_url(self):
+        return f"/catering/img/{self.id%15}"
+
 
 
 class Meal(BaseModel):

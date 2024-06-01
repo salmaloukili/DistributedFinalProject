@@ -39,6 +39,9 @@ class Event(BaseModel):
 
         return price
 
+    @jsonapi_attr
+    def image_url(self):
+        return f"/venues/img/{self.id%15}"
 
 class Ticket(BaseModel):
     __tablename__ = "tickets"

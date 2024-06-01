@@ -1,5 +1,5 @@
 import random
-from safrs import ValidationError
+from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
 
 
@@ -10,6 +10,10 @@ class Bus(BaseModel):
     model = FunctionDefault(db.String(100), default=fake.vehicle_year_make_model)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
     schedules = db.relationship("Schedule", back_populates="bus")
+
+    @jsonapi_attr
+    def image_url(self):
+        return f"/transport/img/{self.id%15}"
 
 
 class Schedule(BaseModel):
