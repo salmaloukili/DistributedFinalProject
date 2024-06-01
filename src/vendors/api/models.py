@@ -12,8 +12,8 @@ from faker_vehicle import VehicleProvider
 
 import random
 
-random.seed(1)
-Faker.seed(1)
+random.seed()
+Faker.seed()
 fake = Faker("nl_BE")
 fake.add_provider(FoodProvider)
 fake.add_provider(company)
