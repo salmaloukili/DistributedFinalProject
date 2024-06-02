@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import { getCallable } from 'src/utils/firebase';
 import EventCard from '../event-card';
 import EventSort from '../event-sort';
-import EventCartWidget from '../event-cart-widget';
+
 
 export default function AppPage() {
   const [events, setEvents] = useState([]);
@@ -18,6 +18,7 @@ export default function AppPage() {
 
     getEvents()
       .then((result) => {
+        console.log(result);
         if (result.data && result.data.success) {
           const fetchedEvents = result.data.events.map(event => ({
             id: event.id,
@@ -83,65 +84,8 @@ export default function AppPage() {
           <Typography variant="body1">Loading events...</Typography>
         )}
       </Grid>
-
-      <EventCartWidget />
     </Container>
   );
 }
 
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { getFunctions, httpsCallable } from 'firebase/functions'; 
-// import { getCallable } from 'src/utils/firebase';
-// import EventCard from '../event-card';
-// import EventSort from '../event-sort';
-// import EventFilters from '../event-filters';
-// import EventCartWidget from '../event-cart-widget';
-
-// export default function AppPage() {
-//   const [events, setEvents] = useState([]);
-
-//   useEffect(() => {
-//     const getEvents = getCallable('endpoints-getEvents');
-
-//     getEvents()
-//       .then((result) => {
-//         if (result.data && result.data.success) {
-//           setEvents(result.data.events);
-//         } else {
-//           console.error('Error fetching events:', result.data.error);
-//         }
-//       })
-//       .catch((error) => {
-//         console.error('Error fetching events:', error);
-//       });
-//   }, []);
-
-//   return (
-//     <div>
-//       {events.length > 0 ? (
-//         events.map((eventWrapper) => {
-//           const event = eventWrapper.data;
-//           const eventDate = new Date(event.date._seconds * 1000); // Convert Firestore timestamp to Date
-          
-//           return (
-//             <div key={eventWrapper.id}>
-//               <h2>{event.name}</h2>
-//               <p><strong>Date:</strong> {eventDate.toDateString()}</p>
-//               <p><strong>Location:</strong> {event.location}</p>
-//               <p><strong>Price Range:</strong> {event.max_price}</p>
-//               <img src={event.image} alt={event.name} style={{ width: '200px' }} />
-//               <p>{event.description}</p>
-//             </div>
-//           );
-//         })
-//       ) : (
-//         <p>Loading events...</p>
-//       )}
-//     </div>
-//   );
-// }
 

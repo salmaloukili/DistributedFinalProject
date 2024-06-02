@@ -1,7 +1,3 @@
-
-
-
-
 // import React, { useState, useEffect } from 'react';
 // import { useParams, useLocation } from 'react-router-dom';
 // import { Container, Typography, Button, Modal, Box, Stack, Card, CardMedia, CardContent, Grid } from '@mui/material';
@@ -21,8 +17,7 @@
 //   const [transportationOptions, setTransportationOptions] = useState([]);
 //   const [foodOptions, setFoodOptions] = useState([]);
 
-
-//    const randomImage = images[Math.floor(Math.random() * images.length)].image;
+//   const randomImage = images[Math.floor(Math.random() * images.length)].image;
 
 //   useEffect(() => {
 //     if (modalOpen && step === 1) {
@@ -41,11 +36,11 @@
 //   }
 
 //   const fetchTransportationOptions = async () => {
-//     const getTransportation = getCallable('get-transportation');
+//     const getTransportation = getCallable('endpoints-getTransportation');
 //     try {
-//       const result = await getTransportation({ eventId: id });
+//       const result = await getTransportation({ date: event.date });
 //       if (result.data && result.data.success) {
-//         setTransportationOptions(result.data.transportation);
+//         setTransportationOptions(result.data.schedules);
 //       } else {
 //         console.error('Error fetching transportation options:', result.data.error);
 //       }
@@ -55,11 +50,11 @@
 //   };
 
 //   const fetchFoodOptions = async () => {
-//     const getFood = getCallable('get-food');
+//     const getFood = getCallable('endpoints-getFood');
 //     try {
-//       const result = await getFood({ eventId: id });
+//       const result = await getFood();
 //       if (result.data && result.data.success) {
-//         setFoodOptions(result.data.food);
+//         setFoodOptions(result.data.menus);
 //       } else {
 //         console.error('Error fetching food options:', result.data.error);
 //       }
@@ -87,12 +82,13 @@
 //   const renderTransportationOptions = () => (
 //     <Grid container spacing={2}>
 //       {transportationOptions.map((option) => (
-//         <Grid item xs={12} sm={6} key={option.busID}>
+//         <Grid item xs={12} sm={6} key={option.id}>
 //           <Card onClick={() => { setSelectedTransportation(option); handleNext(); }}>
 //             <CardContent>
-//               <Typography variant="h6">Bus ID: {option.busID}</Typography>
-//               <Typography variant="body1">Origin: {option.origin}</Typography>
-//               <Typography variant="body1">Price: {option.price} EUR</Typography>
+//               <Typography variant="h6">Bus Model: {option.data.bus.model}</Typography>
+//               <Typography variant="body1">Origin: {option.data.origin}</Typography>
+//               <Typography variant="body1">Price: {option.data.price} EUR</Typography>
+//               <Typography variant="body1">Departure Date: {new Date(option.data.departure_date._seconds * 1000).toLocaleDateString()}</Typography>
 //             </CardContent>
 //           </Card>
 //         </Grid>
@@ -103,11 +99,19 @@
 //   const renderFoodOptions = () => (
 //     <Grid container spacing={2}>
 //       {foodOptions.map((option) => (
-//         <Grid item xs={12} sm={6} key={option.foodID}>
+//         <Grid item xs={12} sm={6} key={option.id}>
 //           <Card onClick={() => { setSelectedFood(option); handleNext(); }}>
+//             <CardMedia
+//               component="img"
+//               height="140"
+//               image={option.data.image || 'default-food-image.jpg'} // Default image if none provided
+//               alt={option.data.food}
+//             />
 //             <CardContent>
-//               <Typography variant="h6">Food: {option.name}</Typography>
-//               <Typography variant="body1">Price: {option.price} EUR</Typography>
+//               <Typography variant="h6">Food: {option.data.food}</Typography>
+//               <Typography variant="h6">Drink: {option.data.drink}</Typography>
+//               <Typography variant="body1">Description: {option.data.description}</Typography>
+//               <Typography variant="body1">Price: {option.data.price} EUR</Typography>
 //             </CardContent>
 //           </Card>
 //         </Grid>
@@ -137,9 +141,9 @@
 //             <Typography variant="h6">Package Summary</Typography>
 //             <Typography>Event: {event.name}</Typography>
 //             <Typography>Seat: {selectedSeat}</Typography>
-//             <Typography>Transportation: {selectedTransportation?.origin} - {selectedTransportation?.price} EUR</Typography>
-//             <Typography>Food: {selectedFood?.name} - {selectedFood?.price} EUR</Typography>
-//             <Button onClick={addToCart}>Add to Cart</Button>
+//             <Typography>Transportation: {selectedTransportation?.data.origin} - {selectedTransportation?.data.price} EUR</Typography>
+//             <Typography>Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR</Typography>
+//             <Button onClick={addToCart} disabled={!selectedSeat || !selectedTransportation || !selectedFood}>Add to Cart</Button>
 //           </Box>
 //         );
 //       default:
@@ -165,16 +169,16 @@
 //                 Date: {event.date ? new Date(event.date._seconds * 1000).toLocaleDateString('en-GB') : 'Date not available'}
 //               </Typography>
 //               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-//                 Location: {event.venue_id}
+//                 Location: {event.venue_name}
 //               </Typography>
 //               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-//                 Address: Av. Victor Rousseau 208, 1190 Forest
-//               </Typography>
-//               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-//                 Opening Doors Time: 19h
+//                 Address: {event.venue_location}
 //               </Typography>
 //               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
 //                 Price: {event.max_price} EUR
+//               </Typography>
+//               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+//                 Genre: {event.genre}
 //               </Typography>
 //             </Grid>
 //             <Grid item xs={12} sm={4} display="flex" justifyContent="flex-end" alignItems="center">
@@ -191,7 +195,7 @@
 //         </CardContent>
 //       </Card>
 //       <Modal open={modalOpen} onClose={closeModal}>
-//         <Box sx={{ p: 4, backgroundColor: 'white', m: 'auto', mt: 10, borderRadius: 2 }}>
+//         <Box sx={{ p: 4, backgroundColor: 'white', m: 'auto', mt: 10, borderRadius: 2, maxHeight: '80vh', overflowY: 'auto' }}>
 //           {renderModalContent()}
 //           <Stack direction="row" justifyContent="space-between" mt={2}>
 //             <Button onClick={handleBack} disabled={step === 1}>Back</Button>
@@ -205,20 +209,19 @@
 
 
 
-
-
-
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Container, Typography, Button, Modal, Box, Stack, Card, CardMedia, CardContent, Grid } from '@mui/material';
+import { CartContext } from 'src/context/CartContext';
 import { getCallable } from 'src/utils/firebase';  
 import { images } from 'src/_mock/event-images';
+
 
 export default function EventDetails() {
   const { id } = useParams();
   const location = useLocation();
-  const { event } = location.state || {}; 
+  const { event } = location.state || {};
+  const { addToCart } = useContext(CartContext);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -247,23 +250,18 @@ export default function EventDetails() {
   }
 
   const fetchTransportationOptions = async () => {
-  const getTransportation = getCallable('endpoints-getTransportation');
-  try {
-    const eventDate = event.date ? new Date(event.date._seconds * 1000).toISOString() : null;
-    if (!eventDate) {
-      throw new Error('Event date is not available');
+    const getTransportation = getCallable('endpoints-getTransportation');
+    try {
+      const result = await getTransportation({ date: event.date });
+      if (result.data && result.data.success) {
+        setTransportationOptions(result.data.schedules);
+      } else {
+        console.error('Error fetching transportation options:', result.data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching transportation options:', error);
     }
-
-    const result = await getTransportation({ date: eventDate });
-    if (result.data && result.data.success) {
-      setTransportationOptions(result.data.schedules);
-    } else {
-      console.error('Error fetching transportation options:', result.data.error);
-    }
-  } catch (error) {
-    console.error('Error fetching transportation options:', error);
-  }
-};
+  };
 
   const fetchFoodOptions = async () => {
     const getFood = getCallable('endpoints-getFood');
@@ -290,8 +288,16 @@ export default function EventDetails() {
     if (step > 1) setStep(step - 1);
   };
 
-  const addToCart = async () => {
-    // Implement add to cart logic here
+  const addToCartHandler = () => {
+    const packageItem = {
+      id: `${event.id}-${Date.now()}`,
+      event,
+      seat: selectedSeat,
+      transportation: selectedTransportation,
+      food: selectedFood,
+      total: selectedTransportation.data.price + selectedFood.data.price + event.max_price
+    };
+    addToCart(packageItem);
     closeModal();
   };
 
@@ -317,8 +323,15 @@ export default function EventDetails() {
       {foodOptions.map((option) => (
         <Grid item xs={12} sm={6} key={option.id}>
           <Card onClick={() => { setSelectedFood(option); handleNext(); }}>
+            <CardMedia
+              component="img"
+              height="140"
+              image={option.data.image || 'default-food-image.jpg'}
+              alt={option.data.food}
+            />
             <CardContent>
               <Typography variant="h6">Food: {option.data.food}</Typography>
+              <Typography variant="h6">Drink: {option.data.drink}</Typography>
               <Typography variant="body1">Description: {option.data.description}</Typography>
               <Typography variant="body1">Price: {option.data.price} EUR</Typography>
             </CardContent>
@@ -352,7 +365,8 @@ export default function EventDetails() {
             <Typography>Seat: {selectedSeat}</Typography>
             <Typography>Transportation: {selectedTransportation?.data.origin} - {selectedTransportation?.data.price} EUR</Typography>
             <Typography>Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR</Typography>
-            <Button onClick={addToCart}>Add to Cart</Button>
+            <Typography>Total: {(selectedTransportation?.data?.price || 0) + (selectedFood?.data?.price || 0) + (event.max_price || 0)} EUR</Typography>
+            <Button onClick={addToCartHandler} disabled={!selectedSeat || !selectedTransportation || !selectedFood}>Add to Cart</Button>
           </Box>
         );
       default:
@@ -378,16 +392,16 @@ export default function EventDetails() {
                 Date: {event.date ? new Date(event.date._seconds * 1000).toLocaleDateString('en-GB') : 'Date not available'}
               </Typography>
               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                Location: {event.venue_id}
+                Location: {event.venue_name}
               </Typography>
               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                Address: Av. Victor Rousseau 208, 1190 Forest
-              </Typography>
-              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                Opening Doors Time: 19h
+                Address: {event.venue_location}
               </Typography>
               <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                 Price: {event.max_price} EUR
+              </Typography>
+              <Typography variant="body1" component="div" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                Genre: {event.genre}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={4} display="flex" justifyContent="flex-end" alignItems="center">
@@ -404,7 +418,7 @@ export default function EventDetails() {
         </CardContent>
       </Card>
       <Modal open={modalOpen} onClose={closeModal}>
-        <Box sx={{ p: 4, backgroundColor: 'white', m: 'auto', mt: 10, borderRadius: 2 }}>
+        <Box sx={{ p: 4, backgroundColor: 'white', m: 'auto', mt: 10, borderRadius: 2, maxHeight: '80vh', overflowY: 'auto' }}>
           {renderModalContent()}
           <Stack direction="row" justifyContent="space-between" mt={2}>
             <Button onClick={handleBack} disabled={step === 1}>Back</Button>
