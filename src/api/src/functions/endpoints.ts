@@ -6,12 +6,13 @@ import * as base from "../firebase";
 exports.getEvents = onCall(async (request) => {
   const querySnapshot = await base.db.collectionGroup("events").get();
   const data = querySnapshot.docs.map((doc) => {
-    return { id: doc.id, ...doc.data() };
+    return { id: doc.id, ref: doc.ref.path, ...doc.data() };
   });
   return data;
 });
 
-// Cloud Function to get transportation schedules for a specific date
+
+//Cloud Function to get transportation schedules for a specific date
 exports.getTransportation = onCall((request) => {
   const { date } = request.data;
 
@@ -83,6 +84,8 @@ exports.getTransportation = onCall((request) => {
       return { success: false, error: error.message };
     });
 });
+
+
 
 exports.getFood = onCall((request) => {
   return base.db

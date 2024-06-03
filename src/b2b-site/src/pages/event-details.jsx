@@ -1,13 +1,19 @@
-// import React, { useState, useEffect } from 'react';
+
+
+
+// import React, { useState, useEffect, useContext } from 'react';
 // import { useParams, useLocation } from 'react-router-dom';
 // import { Container, Typography, Button, Modal, Box, Stack, Card, CardMedia, CardContent, Grid } from '@mui/material';
+// import { CartContext } from 'src/context/CartContext';
 // import { getCallable } from 'src/utils/firebase';  
 // import { images } from 'src/_mock/event-images';
+
 
 // export default function EventDetails() {
 //   const { id } = useParams();
 //   const location = useLocation();
-//   const { event } = location.state || {}; 
+//   const { event } = location.state || {};
+//   const { addToCart } = useContext(CartContext);
 
 //   const [modalOpen, setModalOpen] = useState(false);
 //   const [step, setStep] = useState(1);
@@ -35,19 +41,20 @@
 //     return <Typography variant="h4">Event not found</Typography>;
 //   }
 
-//   const fetchTransportationOptions = async () => {
-//     const getTransportation = getCallable('endpoints-getTransportation');
-//     try {
-//       const result = await getTransportation({ date: event.date });
-//       if (result.data && result.data.success) {
-//         setTransportationOptions(result.data.schedules);
-//       } else {
-//         console.error('Error fetching transportation options:', result.data.error);
-//       }
-//     } catch (error) {
-//       console.error('Error fetching transportation options:', error);
+//  const fetchTransportationOptions = async () => {
+//   const getTransportation = getCallable('endpoints-getTransportation');
+//   try {
+//     const result = await getTransportation({ date: event.date });
+//     if (result.data && result.data.success) {
+//       setTransportationOptions(result.data.schedules);
+//     } else {
+//       console.error('Error fetching transportation options:', result.data.error);
 //     }
-//   };
+//   } catch (error) {
+//     console.error('Error fetching transportation options:', error);
+//   }
+// };
+
 
 //   const fetchFoodOptions = async () => {
 //     const getFood = getCallable('endpoints-getFood');
@@ -74,8 +81,16 @@
 //     if (step > 1) setStep(step - 1);
 //   };
 
-//   const addToCart = async () => {
-//     // Implement add to cart logic here
+//   const addToCartHandler = () => {
+//     const packageItem = {
+//       id: `${event.id}-${Date.now()}`,
+//       event,
+//       seat: selectedSeat,
+//       transportation: selectedTransportation,
+//       food: selectedFood,
+//       total: selectedTransportation.data.price + selectedFood.data.price + event.max_price
+//     };
+//     addToCart(packageItem);
 //     closeModal();
 //   };
 
@@ -104,7 +119,7 @@
 //             <CardMedia
 //               component="img"
 //               height="140"
-//               image={option.data.image || 'default-food-image.jpg'} // Default image if none provided
+//               image={option.data.image || 'default-food-image.jpg'}
 //               alt={option.data.food}
 //             />
 //             <CardContent>
@@ -143,7 +158,8 @@
 //             <Typography>Seat: {selectedSeat}</Typography>
 //             <Typography>Transportation: {selectedTransportation?.data.origin} - {selectedTransportation?.data.price} EUR</Typography>
 //             <Typography>Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR</Typography>
-//             <Button onClick={addToCart} disabled={!selectedSeat || !selectedTransportation || !selectedFood}>Add to Cart</Button>
+//             <Typography>Total: {(selectedTransportation?.data?.price || 0) + (selectedFood?.data?.price || 0) + (event.max_price || 0)} EUR</Typography>
+//             <Button onClick={addToCartHandler} disabled={!selectedSeat || !selectedTransportation || !selectedFood}>Add to Cart</Button>
 //           </Box>
 //         );
 //       default:
@@ -209,13 +225,14 @@
 
 
 
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Container, Typography, Button, Modal, Box, Stack, Card, CardMedia, CardContent, Grid } from '@mui/material';
 import { CartContext } from 'src/context/CartContext';
 import { getCallable } from 'src/utils/firebase';  
+import { mockTransportationOptions } from 'src/_mock/transportation'; 
 import { images } from 'src/_mock/event-images';
-
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -250,9 +267,10 @@ export default function EventDetails() {
   }
 
   const fetchTransportationOptions = async () => {
-    const getTransportation = getCallable('endpoints-getTransportation');
     try {
-      const result = await getTransportation({ date: event.date });
+      const result = await new Promise((resolve) => {
+        setTimeout(() => resolve({ data: { success: true, schedules: mockTransportationOptions } }), 500);
+      });
       if (result.data && result.data.success) {
         setTransportationOptions(result.data.schedules);
       } else {
@@ -278,10 +296,16 @@ export default function EventDetails() {
   };
 
   const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const closeModal = () => {
+    setModalOpen(false);
+    setStep(1);
+    setSelectedSeat(null);
+    setSelectedTransportation(null);
+    setSelectedFood(null);
+  };
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -362,11 +386,11 @@ export default function EventDetails() {
           <Box>
             <Typography variant="h6">Package Summary</Typography>
             <Typography>Event: {event.name}</Typography>
-            <Typography>Seat: {selectedSeat}</Typography>
+            <Typography>Ticket: {event.max_price} EUR</Typography>
             <Typography>Transportation: {selectedTransportation?.data.origin} - {selectedTransportation?.data.price} EUR</Typography>
             <Typography>Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR</Typography>
             <Typography>Total: {(selectedTransportation?.data?.price || 0) + (selectedFood?.data?.price || 0) + (event.max_price || 0)} EUR</Typography>
-            <Button onClick={addToCartHandler} disabled={!selectedSeat || !selectedTransportation || !selectedFood}>Add to Cart</Button>
+            <Button onClick={addToCartHandler} disabled={!selectedTransportation || !selectedFood}>Add to Cart</Button>
           </Box>
         );
       default:

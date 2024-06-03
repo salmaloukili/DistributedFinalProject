@@ -25,15 +25,12 @@
 //     </StyledRoot>
 //   );
 // }
-
-
-
-
 import React, { useContext } from 'react';
 import { Badge, Box, Button, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Iconify from 'src/components/iconify';
 import { CartContext } from 'src/context/CartContext';
+import { Link } from 'react-router-dom';
 
 const StyledRoot = styled('div')(({ theme }) => ({
   zIndex: 999,
@@ -50,35 +47,18 @@ const StyledRoot = styled('div')(({ theme }) => ({
 }));
 
 export default function EventCartWidget() {
-  const { cart, removeFromCart, clearCart } = useContext(CartContext);
-
-  const handleRemove = (id) => {
-    removeFromCart(id);
-  };
-
-  const handleBuy = () => {
-    // Implement buy logic here
-    clearCart();
-  };
+  const { cart } = useContext(CartContext);
 
   return (
     <StyledRoot>
       <Badge showZero badgeContent={cart.length} color="error" max={99}>
         <Iconify icon="eva:shopping-cart-fill" width={24} height={24} />
       </Badge>
-      {cart.length > 0 && (
+      <Link to="/cart" style={{ textDecoration: 'none', color: 'inherit' }}>
         <Box sx={{ ml: 2 }}>
-          {cart.map((item) => (
-            <Box key={item.id} sx={{ mb: 1 }}>
-              <Typography variant="body1">{item.event.name}</Typography>
-              <Typography variant="body2">Total: {item.total} EUR</Typography>
-              <Button onClick={() => handleRemove(item.id)}>Remove</Button>
-            </Box>
-          ))}
-          <Button onClick={handleBuy} variant="contained">Buy</Button>
+          <Typography variant="body1">Cart</Typography>
         </Box>
-      )}
+      </Link>
     </StyledRoot>
   );
 }
-
