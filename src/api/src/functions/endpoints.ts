@@ -3,57 +3,12 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 
 // Cloud Function to get all events
-exports.getEvents = onCall((request) => {
-  return base.db
-    .collection("vendors")
-    .where("type", "==", "Venue")
-    .get()
-    .then((vendorsSnapshot) => {
-      const promises: any[] = [];
-
-      vendorsSnapshot.forEach((vendorDoc) => {
-        const venuesPromise = vendorDoc.ref
-          .collection("venues")
-          .get()
-          .then((venuesSnapshot) => {
-            const eventPromises: any[] = [];
-
-            venuesSnapshot.forEach((venueDoc) => {
-              const eventsPromise = venueDoc.ref
-                .collection("events")
-                .get()
-                .then((eventsSnapshot) => {
-                  const events: any[] | PromiseLike<any[]> = [];
-
-                  eventsSnapshot.forEach((eventDoc) => {
-                    events.push({
-                      id: eventDoc.id,
-                      data: eventDoc.data(),
-                    });
-                  });
-
-                  return events;
-                });
-
-              eventPromises.push(eventsPromise);
-            });
-
-            return Promise.all(eventPromises);
-          });
-
-        promises.push(venuesPromise);
-      });
-
-      return Promise.all(promises);
-    })
-    .then((results) => {
-      const events = results.flat(2); // Flatten the array structure
-      return { success: true, events };
-    })
-    .catch((error) => {
-      console.error("Error fetching events:", error);
-      return { success: false, error: error.message };
-    });
+exports.getEvents = onCall(async (request) => {
+  const querySnapshot = await base.db.collectionGroup("events").get();
+  const data = querySnapshot.docs.map((doc) => {
+    return { id: doc.id, ...doc.data() };
+  });
+  return data;
 });
 
 // Cloud Function to get transportation schedules for a specific date
@@ -130,7 +85,6 @@ exports.getTransportation = onCall((request) => {
 });
 
 exports.getFood = onCall((request) => {
-
   return base.db
     .collection("vendors")
     .where("type", "==", "Catering")
@@ -168,5 +122,4 @@ exports.getFood = onCall((request) => {
       console.error("Error fetching menus:", error);
       return { success: false, error: error.message };
     });
-
 });

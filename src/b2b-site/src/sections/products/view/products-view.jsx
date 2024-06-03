@@ -19,10 +19,10 @@ export default function AppPage() {
     getEvents()
       .then((result) => {
         console.log(result);
-        if (result.data && result.data.success) {
-          const fetchedEvents = result.data.events.map(event => ({
+        if (result.data) {
+          const fetchedEvents = result.data.map(event => ({
             id: event.id,
-            ...event.data,
+            ...event,
           }));
           setEvents(fetchedEvents);
           console.log(fetchedEvents);
