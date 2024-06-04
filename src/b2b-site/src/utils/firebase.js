@@ -1,7 +1,5 @@
-/* eslint-disable import/no-mutable-exports */
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
@@ -9,7 +7,6 @@ let response = fetch('/__/firebase/init.json');
 let app;
 let auth;
 let functions;
-let fs;
 let storage;
 if (response.ok) {
   response = await response.json();

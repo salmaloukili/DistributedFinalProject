@@ -8,9 +8,9 @@
     "prettier"
   ],
   "extends": [
-    "airbnb",
-    "airbnb/hooks",
-    "prettier"
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -58,6 +58,7 @@
     "no-promise-executor-return": 0,
     "react/require-default-props": 0,
     "react/jsx-filename-extension": 0,
+    "react/display-name": 0,
     "react/jsx-props-no-spreading": 0,
     "import/prefer-default-export": 0,
     "react/function-component-definition": 0,
