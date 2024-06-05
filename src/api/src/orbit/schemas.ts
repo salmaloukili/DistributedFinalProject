@@ -4,6 +4,7 @@ const base = {
   attributes: {
     created_at: { type: "datetime" },
     modified_at: { type: "datetime" },
+    removed: { type: "boolean" },
   },
 };
 

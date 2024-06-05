@@ -68,7 +68,9 @@ async function getData(
   }
   return data;
 }
-
+exports.test = functions.https.onRequest((req, res) => {
+  res.json(JSON.parse(process.env.VENDORS));
+});
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {

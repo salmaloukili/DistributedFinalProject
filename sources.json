@@ -1,0 +1,62 @@
+[
+  {
+    "hostName": "indistvendor-14.azurewebsites.net"
+  },
+  {
+    "hostName": "indistvendor-13.azurewebsites.net"
+  },
+  {
+    "hostName": "indistvendor-15.azurewebsites.net"
+  },
+  {
+    "hostName": "indistvendor-11.azurewebsites.net"
+  },
+  {
+    "hostName": "indistvendor-12.azurewebsites.net"
+  },
+  {
+    "hostName": "usdistvendor-19.azurewebsites.net"
+  },
+  {
+    "hostName": "usdistvendor-18.azurewebsites.net"
+  },
+  {
+    "hostName": "usdistvendor-20.azurewebsites.net"
+  },
+  {
+    "hostName": "usdistvendor-17.azurewebsites.net"
+  },
+  {
+    "hostName": "usdistvendor-16.azurewebsites.net"
+  },
+  {
+    "hostName": "eudistvendor-5.azurewebsites.net"
+  },
+  {
+    "hostName": "eudistvendor-2.azurewebsites.net"
+  },
+  {
+    "hostName": "eudistvendor-1.azurewebsites.net"
+  },
+  {
+    "hostName": "eudistvendor-3.azurewebsites.net"
+  },
+  {
+    "hostName": "eudistvendor-4.azurewebsites.net"
+  },
+  {
+    "hostName": "asdistvendor-8.azurewebsites.net"
+  },
+  {
+    "hostName": "asdistvendor-6.azurewebsites.net"
+  },
+  {
+    "hostName": "asdistvendor-7.azurewebsites.net"
+  },
+  {
+    "hostName": "asdistvendor-9.azurewebsites.net"
+  },
+  {
+    "hostName": "asdistvendor-10.azurewebsites.net"
+  }
+]
