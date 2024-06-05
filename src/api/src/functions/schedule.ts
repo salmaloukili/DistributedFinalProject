@@ -35,35 +35,39 @@ async function getData(
 
   for (const source of sources) {
     for (const param of params) {
-      const query = source.query((q) => {
-        let _q = q.findRecords(param.obj);
-        // This checks if the time is set. If it is, it will get only newer data
-        // otherwise it queries all of them
-        if (param.time) {
-          _q = _q.filter({
-            attribute: "modified_at",
-            op: "gt",
-            value: param.time.toJSON().replace("T", " "),
-          });
-        }
-        return _q.options({ include: param.include });
-      });
+      try {
+        const query = source.query((q) => {
+          let _q = q.findRecords(param.obj);
+          // This checks if the time is set. If it is, it will get only newer data
+          // otherwise it queries all of them
+          if (param.time) {
+            _q = _q.filter({
+              attribute: "modified_at",
+              op: "gt",
+              value: param.time.toJSON().replace("T", " "),
+            });
+          }
+          return _q.options({ include: param.include });
+        });
 
-      const result: any = await query;
-      const batch = db.batch();
+        const result: any = await query;
+        const batch = db.batch();
 
-      if (upload) {
-        for (const element of result) {
-          const ref = await param.func(element, source);
-          const ids = extractID(element.relationships);
-          batch.set(ref, {
-            ...element.attributes,
-            relationships: ids,
-          });
+        if (upload) {
+          for (const element of result) {
+            const ref = await param.func(element, source);
+            const ids = extractID(element.relationships);
+            batch.set(ref, {
+              ...element.attributes,
+              relationships: ids,
+            });
+          }
         }
+        await batch.commit();
+        data.push(result);
+      } catch (error) {
+        continue;
       }
-      await batch.commit();
-      data.push(result);
     }
   }
   return data;

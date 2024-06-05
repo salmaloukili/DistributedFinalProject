@@ -61,6 +61,7 @@ function buildJSONSource(secret: VendorSecret, schema, namespace) {
     host: secret.VENDOR_URL,
     namespace: "api/" + namespace,
     defaultFetchSettings: {
+      timeout: 10000,
       headers: {
         Authorization: "Bearer " + secret.VENDOR_SECRET_TOKEN,
       },
@@ -235,7 +236,7 @@ let transportSources = [];
 let venueSources = [];
 
 for (const vendor of vendors) {
-  switch (vendor.VENDOR_COMPANY_TYPE) { 
+  switch (vendor.VENDOR_COMPANY_TYPE) {
     case "Venue":
       venueSources.push(buildJSONSource(vendor, venueVendor, "venues"));
       break;
