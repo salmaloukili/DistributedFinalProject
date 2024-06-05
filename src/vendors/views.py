@@ -11,8 +11,6 @@ bp = Blueprint(
 )
 
 logo_number = random.randint(1, 100)
-company = fake.company()
-os.environ["VENDOR_COMPANY_NAME"] = company
 
 
 @bp.get("/populate_db")
@@ -31,4 +29,4 @@ def get_image():
 
 @bp.get("/")
 def home():
-    return company
+    return os.environ["VENDOR_COMPANY_NAME"]

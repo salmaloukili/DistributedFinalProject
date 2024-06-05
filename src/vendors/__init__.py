@@ -12,6 +12,7 @@ from flask_admin import Admin, helpers
 from flask import url_for, send_file, Blueprint
 from safrs import SafrsApi
 from .auth import auth
+from vendors.api import fake
 
 
 def apply_route(blueprint: Blueprint):
@@ -22,7 +23,7 @@ def apply_route(blueprint: Blueprint):
         )
 
 
-def create_app(app):
+def init_app(app):
     blueprints = [
         api.bp,
         venues.bp,
@@ -75,6 +76,10 @@ def setup_database(app):
             admin.add_view(api.AdminModelView(model, api.db.session))
         company_type = random.choice(["Venue", "Transport", "Catering"])
         os.environ["VENDOR_COMPANY_TYPE"] = company_type
+        secret_token = fake.password(40, False, True, True, True)
+        os.environ["VENDOR_SECRET_TOKEN"] = secret_token
+        company = fake.company()
+        os.environ["VENDOR_COMPANY_NAME"] = company
 
         match company_type:
             case "Transport":
