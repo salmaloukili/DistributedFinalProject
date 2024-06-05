@@ -1,3 +1,4 @@
+import os
 from flask_security import SQLAlchemyUserDatastore
 import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -12,7 +13,8 @@ from faker_vehicle import VehicleProvider
 
 import random
 
-seed = random.randint(0, 100000)
+seed = os.environ.get("VENDOR_NUMBER") or 0
+seed = int(seed)
 random.seed(seed)
 Faker.seed(seed)
 
@@ -54,6 +56,9 @@ class BaseModel(SAFRSBase, db.Model):
         db.DateTime,
         default=lambda: datetime.datetime.now(datetime.timezone.utc),
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
+    )
+    removed = FunctionDefault(
+        db.Boolean(), default=lambda: random.choice([True, False])
     )
 
     @classmethod

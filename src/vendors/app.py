@@ -26,7 +26,4 @@ def create_app(test_config=None):
             "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS"
         )
         return response
-
-    with app.app_context():
-        populate_database()
     return app

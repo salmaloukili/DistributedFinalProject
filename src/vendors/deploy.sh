@@ -9,9 +9,10 @@ VENDOR="euDistVendor"
 # az appservice plan create --name inServicePlan --resource-group $RESOURCE_GROUP --sku F1  --location centralindia --is-linux
 
 
-for i in {4..10}; do
+for i in {1..1}; do
     az webapp create --resource-group $RESOURCE_GROUP --plan euServicePlan --name $VENDOR-$i --container-image-name distimgs.azurecr.io/flask-api:latest
-    
+    az webapp config appsettings set --resource-group euServicePlan --name $VENDOR-$i --settings VENDOR_NUMBER=$i
+
     id=$(az identity show --resource-group $RESOURCE_GROUP --name distID --query id --output tsv)
     az webapp identity assign --resource-group $RESOURCE_GROUP --name $VENDOR-$i --identities $id
     

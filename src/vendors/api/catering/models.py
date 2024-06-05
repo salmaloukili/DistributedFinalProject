@@ -56,9 +56,9 @@ class Meal(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(4, 8)):
+    for _ in range(0, random.randint(2, 4)):
         menu = Menu()
-        for _ in range(0, random.randint(0, 10)):
+        for _ in range(0, random.randint(1, 10)):
             Meal(menu_id=menu.id)
     return "Success"
 

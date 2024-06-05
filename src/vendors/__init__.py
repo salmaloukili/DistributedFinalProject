@@ -80,6 +80,7 @@ def setup_database(app):
         os.environ["VENDOR_SECRET_TOKEN"] = secret_token
         company = fake.company()
         os.environ["VENDOR_COMPANY_NAME"] = company
+        api.populate_database()
 
         match company_type:
             case "Transport":
@@ -91,6 +92,7 @@ def setup_database(app):
                         "/transport",
                         method_decorators=[auth.login_required],
                     )
+                transport.populate_database()
             case "Venue":
                 for model in venues.models:
                     create_index(model, api.db)
@@ -100,6 +102,7 @@ def setup_database(app):
                         "/venues",
                         method_decorators=[auth.login_required],
                     )
+                venues.populate_database()
             case "Catering":
                 for model in catering.models:
                     create_index(model, api.db)
@@ -109,7 +112,7 @@ def setup_database(app):
                         "/catering",
                         method_decorators=[auth.login_required],
                     )
-
+                catering.populate_database()
         @security.context_processor
         def security_context_processor():
             return dict(

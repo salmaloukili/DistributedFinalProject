@@ -65,11 +65,11 @@ class Seat(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(2, 4)):
+    for _ in range(0, random.randint(1, 3)):
         bus = Bus()
-        for _ in range(0, random.randint(2, 8)):
+        for _ in range(0, random.randint(2, 4)):
             schedule = Schedule(bus_id=bus.id)
-            for _ in range(0, random.randint(0, round(bus.capacity / 2))):
+            for _ in range(0, random.randint(0, round(bus.capacity / 4))):
                 Seat(schedule_id=schedule.id)
     return "Success"
 

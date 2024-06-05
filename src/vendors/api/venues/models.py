@@ -81,11 +81,11 @@ class Ticket(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(2, 4)):
+    for _ in range(0, random.randint(1, 3)):
         venue = Venue()
-        for _ in range(0, random.randint(2, 8)):
+        for _ in range(0, random.randint(2, 4)):
             event = Event(venue_id=venue.id)
-            for _ in range(0, random.randint(0, round(venue.capacity / 2))):
+            for _ in range(0, random.randint(0, round(venue.capacity / 4))):
                 Ticket(event_id=event.id)
     return "Success"
 
