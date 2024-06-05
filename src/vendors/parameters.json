@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionId": {
+      "value": "6efa34a0-28d3-4dee-835f-bdeef50c667b"
+    },
+    "resourceGroupName": {
+      "value": "Distributed"
+    },
+    "name": {
+      "value": "myWebAppName2"
+    },
+    "location": {
+      "value": "East US"
+    },
+    "hostingPlanName": {
+      "value": "ASP-Distributed-ad91"
+    },
+    "serverFarmResourceGroup": {
+      "value": "Distributed"
+    },
+    "alwaysOn": {
+      "value": false
+    },
+    "ftpsState": {
+      "value": "FtpsOnly"
+    },
+    "sku": {
+      "value": "Free"
+    },
+    "skuCode": {
+      "value": "F1"
+    },
+    "numberOfWorkers": {
+      "value": "1"
+    },
+    "workerSize": {
+      "value": "0"
+    },
+    "workerSizeId": {
+      "value": "0"
+    },
+    "linuxFxVersion": {
+      "value": "PYTHON|3.11"
+    }
+  }
+}

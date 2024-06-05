@@ -1,9 +1,11 @@
+import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Index
 import vendors.api.venues as venues
 import vendors.api.transport as transport
 import vendors.api.catering as catering
 import vendors.api as api
+import random
 from .views import bp
 from flask_security import Security
 from flask_admin import Admin, helpers
@@ -71,33 +73,37 @@ def setup_database(app):
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
+        company_type = random.choice(["Venue", "Transport", "Catering"])
+        os.environ["VENDOR_COMPANY_TYPE"] = company_type
 
-        for model in transport.models:
-            create_index(model, api.db)
-            admin.add_view(api.AdminModelView(model, api.db.session))
-            safrs.expose_object(
-                model,
-                "/transport",
-                method_decorators=[auth.login_required],
-            )
-
-        for model in venues.models:
-            create_index(model, api.db)
-            admin.add_view(api.AdminModelView(model, api.db.session))
-            safrs.expose_object(
-                model,
-                "/venues",
-                method_decorators=[auth.login_required],
-            )
-
-        for model in catering.models:
-            create_index(model, api.db)
-            admin.add_view(api.AdminModelView(model, api.db.session))
-            safrs.expose_object(
-                model,
-                "/catering",
-                method_decorators=[auth.login_required],
-            )
+        match company_type:
+            case "Transport":
+                for model in transport.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/transport",
+                        method_decorators=[auth.login_required],
+                    )
+            case "Venue":
+                for model in venues.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/venues",
+                        method_decorators=[auth.login_required],
+                    )
+            case "Catering":
+                for model in catering.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/catering",
+                        method_decorators=[auth.login_required],
+                    )
 
         @security.context_processor
         def security_context_processor():

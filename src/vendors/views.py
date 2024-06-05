@@ -2,6 +2,7 @@ import random
 from flask import Blueprint, send_file
 from .api.models import fake
 import vendors
+import os
 
 bp = Blueprint(
     "baseBP",
@@ -9,7 +10,9 @@ bp = Blueprint(
     static_url_path="static",
 )
 
-number = random.randint(1, 100)
+logo_number = random.randint(1, 100)
+company = fake.company()
+os.environ["VENDOR_COMPANY_NAME"] = company
 
 
 @bp.get("/populate_db")
@@ -23,9 +26,9 @@ def populate_db():
 
 @bp.route("/logo")
 def get_image():
-    return send_file(f"{bp.static_url_path}/{number}.webp", mimetype="image/gif")
+    return send_file(f"{bp.static_url_path}/{logo_number}.webp", mimetype="image/gif")
 
 
 @bp.get("/")
 def home():
-    return fake.company()
+    return company

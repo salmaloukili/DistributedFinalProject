@@ -12,8 +12,10 @@ from faker_vehicle import VehicleProvider
 
 import random
 
-random.seed()
-Faker.seed()
+seed = random.randint(0, 100000)
+random.seed(seed)
+Faker.seed(seed)
+
 fake = Faker("nl_BE")
 fake.add_provider(FoodProvider)
 fake.add_provider(company)
