@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
 import { account } from 'src/_mock/account';
-import { useRouter } from 'src/routes/hooks';
 import { auth } from 'src/utils/firebase';
 
 // ----------------------------------------------------------------------

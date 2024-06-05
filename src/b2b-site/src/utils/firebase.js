@@ -3,11 +3,12 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
-let response = fetch('/__/firebase/init.json');
+let response = await fetch('/__/firebase/init.json');
 let app;
 let auth;
 let functions;
 let storage;
+
 if (response.ok) {
   response = await response.json();
   app = initializeApp(response);

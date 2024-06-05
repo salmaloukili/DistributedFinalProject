@@ -58,7 +58,7 @@ function getRef(collection: string, ...args: string[]) {
         .doc(String(args[1]))
         .collection("meals");
     case "vendors":
-      return vendorRef
+      return vendorRef;
     default:
       throw new Error("Not part of schema");
   }

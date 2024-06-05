@@ -14,7 +14,7 @@ class FilterJSONAPIURLBuilder extends JSONAPIURLBuilder {
     filters: FilterSpecifier[] | Dict<unknown | unknown[]>,
     request?: RecordQueryRequest | RecordTransformRequest
   ): Dict<unknown>[] {
-    const params = [];
+    let params = [];
     filters.forEach((filterSpecifier, index) => {
       if (
         filterSpecifier.kind === "attribute" &&
@@ -38,7 +38,7 @@ const caterSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: caterVendor,
   name: "1BMkjSaBtyDLbtbanY18",
-  host: "http://127.0.0.1:5000",
+  host: "http://localhost:5000",
   namespace: "api/catering",
   defaultFetchSettings: {
     headers: {
@@ -51,7 +51,7 @@ const transportSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: transportVendor,
   name: "AF8iRt7qkZfQ1cAj1D6z",
-  host: "http://127.0.0.1:5000",
+  host: "http://localhost:5000",
   namespace: "api/transport",
   defaultFetchSettings: {
     headers: {
@@ -64,7 +64,7 @@ const venueSource = new JSONAPISource({
   URLBuilderClass: FilterJSONAPIURLBuilder,
   schema: venueVendor,
   name: "PQSwnqknalhyBW8qPB2a",
-  host: "http://127.0.0.1:5000",
+  host: "http://localhost:5000",
   namespace: "api/venues",
   defaultFetchSettings: {
     headers: {

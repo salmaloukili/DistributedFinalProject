@@ -5,9 +5,6 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 
 import Iconify from 'src/components/iconify';
-import { useEffect, useState } from 'react';
-import { getCallable } from '../../../utils/firebase';
-
 import AppTasks from '../app-tasks';
 import AppNewsUpdate from '../app-news-update';
 import AppOrderTimeline from '../app-order-timeline';
@@ -21,19 +18,10 @@ import AppConversionRates from '../app-conversion-rates';
 // ----------------------------------------------------------------------
 
 export default function AppView() {
-  const [test, setTest] = useState(null);
-  const func = getCallable('endpoints-getEvents');
-  useEffect(() => {
-    func().then((res) => {
-      console.log(res);
-      // setTest(res);
-    });
-  }, [test]);
-
   return (
     <Container maxWidth="xl">
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Hi, Welcome back 👋 {test}
+        Hi, Welcome back 👋
       </Typography>
 
       <Grid container spacing={3}>

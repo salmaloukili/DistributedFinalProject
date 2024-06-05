@@ -10,9 +10,13 @@
         ],
         "b2b-site": [
           "b2b-site-dist"
+        ],
+        "event-package": [
+          "event-package"
         ]
       }
     }
   },
-  "etags": {}
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
