@@ -13,7 +13,7 @@ if (response.ok) {
   response = await response.json();
   app = initializeApp(response);
   auth = getAuth(app);
-  functions = getFunctions(app);
+  functions = getFunctions(app, "europe-west1");
   storage = getStorage(app);
 } else {
   response = {

@@ -46,13 +46,17 @@ interface VendorSecret {
 }
 
 function buildJSONSource(secret: VendorSecret, schema, namespace) {
-  getRef("vendors").doc(secret.VENDOR_NAME).set({
-    name: secret.VENDOR_COMPANY_NAME,
-    type: secret.VENDOR_COMPANY_TYPE,
-    number: secret.VENDOR_NUMBER,
-    token: secret.VENDOR_SECRET_TOKEN,
-    url: secret.VENDOR_URL,
-  });
+  try {
+    getRef("vendors").doc(secret.VENDOR_NAME).set({
+      name: secret.VENDOR_COMPANY_NAME,
+      type: secret.VENDOR_COMPANY_TYPE,
+      number: secret.VENDOR_NUMBER,
+      token: secret.VENDOR_SECRET_TOKEN,
+      url: secret.VENDOR_URL,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 
   return new JSONAPISource({
     URLBuilderClass: FilterJSONAPIURLBuilder,
@@ -246,7 +250,7 @@ for (const vendor of vendors) {
       );
       break;
     case "Catering":
-      venueSources.push(buildJSONSource(vendor, caterVendor, "catering"));
+      caterSources.push(buildJSONSource(vendor, caterVendor, "catering"));
       break;
     default:
       break;
