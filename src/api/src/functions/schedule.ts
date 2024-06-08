@@ -36,6 +36,8 @@ async function getData(
   for (const source of sources) {
     for (const param of params) {
       try {
+        // TODO
+        const time = Date.now();
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
           // This checks if the time is set. If it is, it will get only newer data
@@ -55,8 +57,12 @@ async function getData(
 
         if (upload) {
           for (const element of result) {
+            // TODO
+            // Store the time when I accessed.
             const ref = await param.func(element, source);
             const ids = extractID(element.relationships);
+            // TODO
+            // Store image
             batch.set(ref, {
               ...element.attributes,
               relationships: ids,
@@ -78,6 +84,9 @@ exports.test = functions.https.onRequest((req, res) => {
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
+    // TODO
+    // Make query to firestore
+    const busTime, schedTime;
     const data = await getData(
       sources.transport,
       [
@@ -86,6 +95,7 @@ exports.queryTransport = functions
           include: ["schedules"],
           func: async (doc: any, src: any) =>
             getRef("buses", src.name).doc(doc.id),
+          time: busTime,
         },
         {
           obj: "Schedule",
