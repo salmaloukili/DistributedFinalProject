@@ -86,7 +86,7 @@ exports.queryTransport = functions
   .https.onRequest(async (req, res) => {
     // TODO
     // Make query to firestore
-    const busTime, schedTime;
+    // const busTime, schedTime;
     const data = await getData(
       sources.transport,
       [
@@ -95,7 +95,7 @@ exports.queryTransport = functions
           include: ["schedules"],
           func: async (doc: any, src: any) =>
             getRef("buses", src.name).doc(doc.id),
-          time: busTime,
+          // time: busTime,
         },
         {
           obj: "Schedule",
