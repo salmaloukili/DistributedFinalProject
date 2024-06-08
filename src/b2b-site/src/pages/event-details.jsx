@@ -55,7 +55,8 @@ export default function EventDetails() {
     try {
       const result = await getTransportation(event);
       if (result.data) {
-        setFoodOptions(result.data);
+        setTransportationOptions(result.data);
+        console.log(result.data);
       } else {
         console.error('Error fetching food options:', result.data.error);
       }
@@ -95,16 +96,26 @@ export default function EventDetails() {
     if (step > 1) setStep(step - 1);
   };
 
-  const addToCartHandler = () => {
+  const addToCartHandler = async () => {
     const packageItem = {
       id: `${event.id}-${Date.now()}`,
-      event,
+      event: event,
       seat: selectedSeat,
       transportation: selectedTransportation,
       food: selectedFood,
-      total: selectedTransportation.data.price + selectedFood.data.price + event.max_price,
+      total: selectedTransportation.price + selectedFood.data.price + event.max_price,
     };
     addToCart(packageItem);
+    const reserve = getCallable('endpoints-reserve');
+    try {
+      await reserve({
+        event: event,
+        transportation: selectedTransportation,
+        food: selectedFood,
+      });
+    } catch (error) {
+      console.error('Error reserving:', error);
+    }
     closeModal();
   };
 
@@ -119,12 +130,12 @@ export default function EventDetails() {
             }}
           >
             <CardContent>
-              <Typography variant="h6">Bus Model: {option.data.bus.model}</Typography>
-              <Typography variant="body1">Origin: {option.data.origin}</Typography>
-              <Typography variant="body1">Price: {option.data.price} EUR</Typography>
+              <Typography variant="h6">Bus Model: {''}</Typography>
+              <Typography variant="body1">Origin: {option.origin}</Typography>
+              <Typography variant="body1">Price: {option.price} EUR</Typography>
               <Typography variant="body1">
                 Departure Date:{' '}
-                {new Date(option.data.departure_date._seconds * 1000).toLocaleDateString()}
+                {new Date(option.departure_date._seconds * 1000).toLocaleDateString()}
               </Typography>
               <Box
                 sx={{
@@ -212,8 +223,7 @@ export default function EventDetails() {
             <Typography>Event: {event.name}</Typography>
             <Typography>Ticket: {event.max_price} EUR</Typography>
             <Typography>
-              Transportation: {selectedTransportation?.data.origin} -{' '}
-              {selectedTransportation?.data.price} EUR
+              Transportation: {selectedTransportation?.origin} - {selectedTransportation?.price} EUR
             </Typography>
             <Typography>
               Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR
