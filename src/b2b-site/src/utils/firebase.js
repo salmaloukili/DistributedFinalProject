@@ -13,7 +13,7 @@ if (response.ok) {
   response = await response.json();
   app = initializeApp(response);
   auth = getAuth(app);
-  functions = getFunctions(app, "europe-west1");
+  functions = getFunctions(app, 'europe-west1');
   storage = getStorage(app);
 } else {
   response = {
@@ -28,7 +28,7 @@ if (response.ok) {
   app = initializeApp(response);
   auth = getAuth(app);
   connectAuthEmulator(auth, 'http://127.0.0.1:9099');
-  functions = getFunctions();
+  functions = getFunctions(app, 'europe-west1');
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);
   storage = getStorage(app);
   connectStorageEmulator(storage, '127.0.0.1', 9199);

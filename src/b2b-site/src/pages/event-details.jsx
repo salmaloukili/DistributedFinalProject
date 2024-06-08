@@ -51,20 +51,16 @@ export default function EventDetails() {
   }
 
   const fetchTransportationOptions = async () => {
+    const getTransportation = getCallable('endpoints-getTransportation');
     try {
-      const result = await new Promise((resolve) => {
-        setTimeout(
-          () => resolve({ data: { success: true, schedules: mockTransportationOptions } }),
-          500
-        );
-      });
-      if (result.data && result.data.success) {
-        setTransportationOptions(result.data.schedules);
+      const result = await getTransportation(event);
+      if (result.data) {
+        setFoodOptions(result.data);
       } else {
-        console.error('Error fetching transportation options:', result.data.error);
+        console.error('Error fetching food options:', result.data.error);
       }
     } catch (error) {
-      console.error('Error fetching transportation options:', error);
+      console.error('Error fetching food options:', error);
     }
   };
 
