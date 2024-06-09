@@ -2,7 +2,9 @@
 import * as functions from "firebase-functions";
 import sources from "../orbit/sources";
 import { JSONAPISource } from "@orbit/jsonapi";
-import { db, getRef } from "../firebase";
+import { db, getRef, storage} from "../firebase";
+import { ref, uploadBytes } from "firebase/storage";
+
 
 interface JSONAPIParams {
   obj: string;
@@ -25,6 +27,31 @@ function extractID(relationships) {
 
   return idsByType;
 }
+
+async function blobToBuffer(blob) {
+  const arrayBuffer = await blob.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+async function uploadImage(fullImageUrl, storageImageUrl) {
+  if (storageImageUrl.startsWith('/')) {
+    storageImageUrl = storageImageUrl.substring(1);
+  }
+
+  const response = await fetch(fullImageUrl);
+  const blob = await response.blob();
+
+  const buffer = await blobToBuffer(blob);
+
+  const bucket = storage.bucket();
+  const file = bucket.file(storageImageUrl);
+
+  await file.save(buffer, {
+    metadata: { contentType: blob.type },
+  });
+  return storageImageUrl;
+}
+
 
 async function getData(
   sources: JSONAPISource[],
@@ -54,15 +81,22 @@ async function getData(
 
         const result: any = await query;
         const batch = db.batch();
-
+        
         if (upload) {
           for (const element of result) {
-            // TODO
-            // Store the time when I accessed.
             const ref = await param.func(element, source);
             const ids = extractID(element.relationships);
-            // TODO
-            // Store image
+            if (element.attributes.image_url) {
+              const host = source.requestProcessor.urlBuilder.host;
+              const fullImageUrl = `${host}${element.attributes.image_url}`;
+              try {
+                const newImageUrl = await uploadImage(fullImageUrl, element.attributes.image_url);
+                element.attributes.image_url = newImageUrl;
+              } catch (error) {
+                console.error("Fuck this shit:", error);
+                continue;
+              }
+            }
             batch.set(ref, {
               ...element.attributes,
               relationships: ids,
@@ -78,6 +112,7 @@ async function getData(
   }
   return data;
 }
+
 exports.test = functions.https.onRequest((req, res) => {
   res.json(JSON.parse(process.env.VENDORS));
 });
@@ -95,6 +130,7 @@ exports.queryTransport = functions
           include: ["schedules"],
           func: async (doc: any, src: any) =>
             getRef("buses", src.name).doc(doc.id),
+          upload: true,
           // time: busTime,
         },
         {
@@ -102,6 +138,7 @@ exports.queryTransport = functions
           include: ["bus", "seats"],
           func: async (doc: any, src: any) =>
             getRef("schedules", src.name, doc.attributes.bus_id).doc(doc.id),
+          upload:true,
         },
         {
           obj: "Seat",
