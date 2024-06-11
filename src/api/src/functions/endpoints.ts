@@ -3,6 +3,7 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { getRef } from "../firebase";
 import sources from "../orbit/sources";
+import { ValidationError } from "@orbit/records";
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -34,37 +35,34 @@ exports.getFood = onCall({ region: "europe-west1" }, async (request) => {
 });
 
 exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
-  console.log(request.data)
-  console.log(request.data.event.ref.split("/"))
-  console.log(request.data.event.ref.split("/")[1]);
-  console.log(sources.venues[0])
   const eventVendor = await getRef("vendors")
     .doc(request.data.event.ref.split("/")[1])
     .get();
-    console.log(eventVendor)
 
-  console.log("price is: ")
-  console.log(request.data.event.max_price)
+  const correctVendor = sources.venues.find((v) => v.name === eventVendor.id);
   
-  const correctVendor = sources.venues[0];
+  if (!correctVendor) {
+    return "Error";
+  }
 
+  const dt = new Date();
   const newTicket = {
     type: "Ticket", // Ensure the type matches your schema
     attributes: {
-      price: request.data.event.max_price,
-      sold_date: new Date().toISOString(), // Set current date for sold_date
+      sold_date: dt, // Set current date for sold_date
       status: "reserved",
-      user_id: "userId", // Use the extracted user ID
+      price: request.data.event.price,
+      user_id: request.auth?.uid,
       event_id: parseInt(request.data.event.id, 10),
-      created_at: new Date().toISOString(), // Set created_at to current date
-      modified_at: new Date().toISOString(), // Set modified_at to current date
-      removed: "null", // Assuming this field is nullable and not yet removed
-    },
-    relationships: {
-      event: { data: { type: "event", id: request.data.event.id } },
+      removed: false, // Assuming this field is nullable and not yet removed
     },
   };
-  console.log(newTicket);
-
-  correctVendor.update((t)=> t.addRecord(newTicket))
+  let response;
+  try {
+    response = await correctVendor.update((t) => t.addRecord(newTicket));
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
+  return response;
 });

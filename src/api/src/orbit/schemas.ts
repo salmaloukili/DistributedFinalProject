@@ -2,8 +2,8 @@ import { RecordSchema } from "@orbit/records";
 
 const base = {
   attributes: {
-    created_at: { type: "datetime" },
-    modified_at: { type: "datetime" },
+    created_at: { type: "datetime", validation: { required: false } },
+    modified_at: { type: "datetime", validation: { required: false } },
     removed: { type: "boolean" },
   },
 };
@@ -26,7 +26,7 @@ const venueVendor = new RecordSchema({
         max_price: { type: "number" },
         name: { type: "string" },
         genre: { type: "string" },
-        date: { type: "datetime" },
+        date: { type: "date" },
         price: { type: "number" },
         image_url: { type: "string" },
         venue_id: { type: "number" },
@@ -40,7 +40,7 @@ const venueVendor = new RecordSchema({
     Ticket: {
       attributes: {
         price: { type: "number" },
-        sold_date: { type: "datetime" },
+        sold_date: { type: "date" },
         status: { type: "string" },
         user_id: { type: "string" },
         event_id: { type: "number" },
@@ -71,7 +71,7 @@ const caterVendor = new RecordSchema({
     },
     Meal: {
       attributes: {
-        meal_date: { type: "datetime" },
+        meal_date: { type: "date" },
         status: { type: "string" },
         user_id: { type: "string" },
         menu_id: { type: "number" },
@@ -99,7 +99,7 @@ const transportVendor = new RecordSchema({
     },
     Schedule: {
       attributes: {
-        departure_date: { type: "datetime" },
+        departure_date: { type: "date" },
         origin: { type: "string" },
         price: { type: "number" },
         bus_id: { type: "number" },
@@ -112,7 +112,7 @@ const transportVendor = new RecordSchema({
     },
     Seat: {
       attributes: {
-        sold_date: { type: "datetime" },
+        sold_date: { type: "date" },
         status: { type: "string" },
         user_id: { type: "string" },
         schedule_id: { type: "number" },

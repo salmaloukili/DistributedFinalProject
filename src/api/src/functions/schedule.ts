@@ -130,7 +130,6 @@ exports.queryTransport = functions
           include: ["schedules"],
           func: async (doc: any, src: any) =>
             getRef("buses", src.name).doc(doc.id),
-          upload: true,
           // time: busTime,
         },
         {
@@ -138,7 +137,6 @@ exports.queryTransport = functions
           include: ["bus", "seats"],
           func: async (doc: any, src: any) =>
             getRef("schedules", src.name, doc.attributes.bus_id).doc(doc.id),
-          upload:true,
         },
         {
           obj: "Seat",
