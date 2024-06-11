@@ -40,7 +40,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     .get();
 
   const correctVendor = sources.venues.find((v) => v.name === eventVendor.id);
-  
+
   if (!correctVendor) {
     return "Error";
   }
@@ -64,5 +64,10 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   } catch (error) {
     console.log(error);
   }
+  // TODO: ADD the data to firebase
+  // TODO: Do all other vendors.
+  // TODO: Purchases
+  // TODO: Make sure salma gets the errors so she can display them.
+  // TODO: Test for errors (full venue), disconnected vendor, etc.
   return response;
 });
