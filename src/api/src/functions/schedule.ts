@@ -34,7 +34,7 @@ async function blobToBuffer(blob) {
 }
 
 async function uploadImage(fullImageUrl, storageImageUrl) {
-  if (storageImageUrl.startsWith('/')) {
+  if (storageImageUrl.startsWith("/")) {
     storageImageUrl = storageImageUrl.substring(1);
   }
 

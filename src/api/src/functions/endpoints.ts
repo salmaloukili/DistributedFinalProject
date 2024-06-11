@@ -1,9 +1,8 @@
-import * as admin from "firebase-admin";
 import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { getRef } from "../firebase";
 import sources from "../orbit/sources";
-import { ValidationError } from "@orbit/records";
+import { ServerError } from "@orbit/jsonapi";
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -59,15 +58,18 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   };
   let response;
   try {
-    response = await correctVendor.update((t) => t.addRecord(newTicket));
-    console.log(response);
+    response = (await correctVendor.update((t) =>
+      t.addRecord(newTicket)
+    )) as any;
   } catch (error) {
-    console.log(error);
+    const e = error as ServerError;
+    console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
+    console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
   // TODO: ADD the data to firebase
   // TODO: Do all other vendors.
   // TODO: Purchases
   // TODO: Make sure salma gets the errors so she can display them.
-  // TODO: Test for errors (full venue), disconnected vendor, etc.
+  // TODO: Test for errors (full venue), disconnectedvendor, etc.
   return response;
 });
