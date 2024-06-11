@@ -74,7 +74,8 @@ def setup_database(app):
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
-        company_type = random.choice(["Venue", "Transport", "Catering"])
+        # company_type = random.choice(["Venue", "Transport", "Catering"])
+        company_type = "All"
         os.environ["VENDOR_COMPANY_TYPE"] = company_type
         secret_token = fake.password(40, False, True, True, True)
         os.environ["VENDOR_SECRET_TOKEN"] = secret_token
@@ -113,6 +114,35 @@ def setup_database(app):
                         method_decorators=[auth.login_required],
                     )
                 catering.populate_database()
+            case _:
+                for model in transport.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/transport",
+                        method_decorators=[auth.login_required],
+                    )
+                transport.populate_database()
+                for model in venues.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/venues",
+                        method_decorators=[auth.login_required],
+                    )
+                venues.populate_database()
+                for model in catering.models:
+                    create_index(model, api.db)
+                    admin.add_view(api.AdminModelView(model, api.db.session))
+                    safrs.expose_object(
+                        model,
+                        "/catering",
+                        method_decorators=[auth.login_required],
+                    )
+                catering.populate_database()
+
         @security.context_processor
         def security_context_processor():
             return dict(
