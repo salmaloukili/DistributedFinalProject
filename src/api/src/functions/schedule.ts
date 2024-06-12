@@ -6,6 +6,7 @@ import { db, getRef, storage} from "../firebase";
 import { ref, uploadBytes } from "firebase/storage";
 
 
+
 interface JSONAPIParams {
   obj: string;
   time?: Date;
@@ -58,21 +59,41 @@ async function getData(
   params: JSONAPIParams[],
   upload?: boolean
 ) {
+
   const data: any = [];
 
   for (const source of sources) {
+    
+    const vendorRef = getRef("vendors").doc(source.name);
+    const vendorDoc = await vendorRef.get();
+    const vendorData = vendorDoc.data();
+    if (!vendorData.logo_url) {
+      try {
+        const vendorRef = getRef("vendors").doc(source.name);
+        const logoUrl = `vendor_logos/${source.name}`;
+        const host = sources[0].requestProcessor.urlBuilder.host;
+        const oldLogoUrl = `${host}/logo`;
+        const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
+        const logoUrlField = { logo_url: newLogoUrl };
+
+        await vendorRef.update(logoUrlField);
+      } catch (error) {
+        console.error("Faield to upload logo: ", error);
+      }
+    }
+    
     for (const param of params) {
       try {
         // TODO
         const time = Date.now();
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
-          // This checks if the time is set. If it is, it will get only newer data
+          // This checks if the time is set. If it is, it will get only newer data 
           // otherwise it queries all of them
           if (param.time) {
             _q = _q.filter({
               attribute: "modified_at",
-              op: "gt",
+              op: "gt", 
               value: param.time.toJSON().replace("T", " "),
             });
           }
@@ -90,10 +111,11 @@ async function getData(
               const host = source.requestProcessor.urlBuilder.host;
               const fullImageUrl = `${host}${element.attributes.image_url}`;
               try {
-                const newImageUrl = await uploadImage(fullImageUrl, element.attributes.image_url);
+                
+                const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
                 element.attributes.image_url = newImageUrl;
               } catch (error) {
-                console.error("Fuck this shit:", error);
+                console.error("Failed to upload image: ", error);
                 continue;
               }
             }
@@ -116,12 +138,19 @@ async function getData(
 exports.test = functions.https.onRequest((req, res) => {
   res.json(JSON.parse(process.env.VENDORS));
 });
+
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    // TODO
-    // Make query to firestore
-    // const busTime, schedTime;
+    const now = new Date();
+    const seatTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      16,
+      0,
+      0
+    );
     const data = await getData(
       sources.transport,
       [
@@ -156,6 +185,7 @@ exports.queryTransport = functions
               doc.attributes.schedule_id
             ).doc(doc.id);
           },
+          time: seatTime  
         },
       ],
       true

@@ -16,6 +16,7 @@ const ticketRef = db.collection("tickets");
 
 const venueVendorRef = db.collection("venueVendors");
 const vendorRef = db.collection("vendors");
+
 function getRef(collection: string, ...args: string[]) {
   switch (collection) {
     case "venues":
