@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import {
@@ -11,13 +12,153 @@ import {
   CardMedia,
   CardContent,
   Grid,
+  Snackbar,
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import { CartContext } from 'src/context/CartContext';
-import { getCallable } from 'src/utils/firebase';
-import { mockTransportationOptions } from 'src/_mock/transportation';
+import { getCallable, storage } from 'src/utils/firebase';
 import { images } from 'src/_mock/event-images';
 import ImageComponent from 'src/components/firebase-image';
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+import { getDownloadURL, ref } from 'firebase/storage';
+
+function TransportationOption({ option, setSelectedTransportation, handleNext }) {
+  const [imageUrl, setImageUrl] = useState('');
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.bus.image_url);
+        const url = await getDownloadURL(storageRef);
+        setImageUrl(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.bus.image_url]);
+
+  const [logoURL, setLogoURL] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.vendor.logo_url);
+        const url = await getDownloadURL(storageRef);
+        setLogoURL(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.vendor.logo_url]);
+
+  return (
+    <Grid item xs={12} sm={6} key={option.id}>
+      <Card
+        onClick={() => {
+          setSelectedTransportation(option);
+          handleNext();
+        }}
+      >
+        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardContent>
+          <Typography variant="h6">Bus Model: {''}</Typography>
+          <Typography variant="body1">Origin: {option.origin}</Typography>
+          <Typography variant="body1">Price: {option.price} EUR</Typography>
+          <Typography variant="body1">
+            Departure Date: {new Date(option.departure_date._seconds * 1000).toLocaleDateString()}
+          </Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid white',
+            }}
+          >
+            <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+}
+
+function FoodOption({ option, setSelectedFood, handleNext }) {
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.image_url);
+        const url = await getDownloadURL(storageRef);
+        setImageUrl(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.image_url]);
+
+  const [logoURL, setLogoURL] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.vendor.logo_url);
+        const url = await getDownloadURL(storageRef);
+        setLogoURL(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.vendor.logo_url]);
+
+  return (
+    <Grid item xs={12} sm={6} key={option.id}>
+      <Card
+        onClick={() => {
+          setSelectedFood(option);
+          handleNext();
+        }}
+      >
+        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardContent>
+          <Typography variant="h6">Food: {option.food}</Typography>
+          <Typography variant="h6">Drink: {option.drink}</Typography>
+          <Typography variant="body1">Description: {option.description}</Typography>
+          <Typography variant="body1">Price: {option.price} EUR</Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid white',
+            }}
+          >
+            <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+}
 export default function EventDetails() {
   const { id } = useParams();
   const location = useLocation();
@@ -31,6 +172,8 @@ export default function EventDetails() {
   const [selectedFood, setSelectedFood] = useState(null);
   const [transportationOptions, setTransportationOptions] = useState([]);
   const [foodOptions, setFoodOptions] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const randomImage = images[Math.floor(Math.random() * images.length)].image;
 
@@ -56,12 +199,11 @@ export default function EventDetails() {
       const result = await getTransportation(event);
       if (result.data) {
         setTransportationOptions(result.data);
-        console.log(result.data);
       } else {
-        console.error('Error fetching food options:', result.data.error);
+        console.error('Error fetching transportation options:', result.data.error);
       }
     } catch (error) {
-      console.error('Error fetching food options:', error);
+      console.error('Error fetching transportation options:', error);
     }
   };
 
@@ -96,6 +238,13 @@ export default function EventDetails() {
     if (step > 1) setStep(step - 1);
   };
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const addToCartHandler = async () => {
     const packageItem = {
       id: `${event.id}-${Date.now()}`,
@@ -103,9 +252,12 @@ export default function EventDetails() {
       seat: selectedSeat,
       transportation: selectedTransportation,
       food: selectedFood,
-      total: selectedTransportation.price + selectedFood.data.price + event.max_price,
+      total: selectedTransportation.price + selectedFood.price + event.max_price,
     };
     addToCart(packageItem);
+    closeModal();
+    setSnackbarMessage('Package added to cart successfully!');
+    setSnackbarOpen(true);
     const reserve = getCallable('endpoints-reserve');
     try {
       await reserve({
@@ -116,86 +268,30 @@ export default function EventDetails() {
     } catch (error) {
       console.error('Error reserving:', error);
     }
-    closeModal();
   };
 
   const renderTransportationOptions = () => (
     <Grid container spacing={2}>
-      {transportationOptions.map((option) => (
-        <Grid item xs={12} sm={6} key={option.id}>
-          <Card
-            onClick={() => {
-              setSelectedTransportation(option);
-              handleNext();
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6">Bus Model: {''}</Typography>
-              <Typography variant="body1">Origin: {option.origin}</Typography>
-              <Typography variant="body1">Price: {option.price} EUR</Typography>
-              <Typography variant="body1">
-                Departure Date:{' '}
-                {new Date(option.departure_date._seconds * 1000).toLocaleDateString()}
-              </Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: '2px solid white',
-                }}
-              >
-                <ImageComponent filePath="logo2.jpg" style={{ width: '100%', height: 'auto' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {transportationOptions.map((opt) => (
+        <TransportationOption
+          key={opt.name + opt.id}
+          option={opt}
+          setSelectedTransportation={setSelectedTransportation}
+          handleNext={handleNext}
+        />
       ))}
     </Grid>
   );
 
   const renderFoodOptions = () => (
     <Grid container spacing={2}>
-      {foodOptions.map((option) => (
-        <Grid item xs={12} sm={6} key={option.id}>
-          <Card
-            onClick={() => {
-              setSelectedFood(option);
-              handleNext();
-            }}
-          >
-            <CardMedia
-              component="img"
-              height="140"
-              image={option.data.image || 'default-food-image.jpg'}
-              alt={option.data.food}
-            />
-            <CardContent>
-              <Typography variant="h6">Food: {option.data.food}</Typography>
-              <Typography variant="h6">Drink: {option.data.drink}</Typography>
-              <Typography variant="body1">Description: {option.data.description}</Typography>
-              <Typography variant="body1">Price: {option.data.price} EUR</Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: '2px solid white',
-                }}
-              >
-                <ImageComponent filePath="logo3.webp" style={{ width: '100%', height: 'auto' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {foodOptions.map((opt) => (
+        <FoodOption
+          key={opt.name + opt.id}
+          option={opt}
+          setSelectedFood={setSelectedFood}
+          handleNext={handleNext}
+        />
       ))}
     </Grid>
   );
@@ -226,12 +322,12 @@ export default function EventDetails() {
               Transportation: {selectedTransportation?.origin} - {selectedTransportation?.price} EUR
             </Typography>
             <Typography>
-              Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR
+              Food: {selectedFood?.food} - {selectedFood?.price} EUR
             </Typography>
             <Typography>
               Total:{' '}
-              {(selectedTransportation?.data?.price || 0) +
-                (selectedFood?.data?.price || 0) +
+              {(selectedTransportation?.price || 0) +
+                (selectedFood?.price || 0) +
                 (event.max_price || 0)}{' '}
               EUR
             </Typography>
@@ -347,6 +443,16 @@ export default function EventDetails() {
           </Stack>
         </Box>
       </Modal>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

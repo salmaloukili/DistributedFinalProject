@@ -2,10 +2,8 @@
 import * as functions from "firebase-functions";
 import sources from "../orbit/sources";
 import { JSONAPISource } from "@orbit/jsonapi";
-import { db, getRef, storage} from "../firebase";
+import { db, getRef, storage } from "../firebase";
 import { ref, uploadBytes } from "firebase/storage";
-
-
 
 interface JSONAPIParams {
   obj: string;
@@ -90,7 +88,6 @@ async function getData(
   params: JSONAPIParams[],
   upload?: boolean
 ) {
-
   const data: any = [];
 
   for (const source of sources) {
@@ -99,7 +96,6 @@ async function getData(
     const vendorData = vendorDoc.data();
     if (!vendorData.logo_url) {
       try {
-        const vendorRef = getRef("vendors").doc(source.name);
         const logoUrl = `vendor_logos/${source.name}`;
         const host = source.requestProcessor.urlBuilder.host;
         const oldLogoUrl = `${host}/logo`;
@@ -117,7 +113,7 @@ async function getData(
       try {
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
-          // This checks if the time is set. If it is, it will get only newer data 
+          // This checks if the time is set. If it is, it will get only newer data
           // otherwise it queries all of them
           if (time != -1) {
             _q = _q.filter({
