@@ -53,6 +53,25 @@ async function uploadImage(fullImageUrl, storageImageUrl) {
   return storageImageUrl;
 }
 
+async function updateLastModified(
+  documentId: string,
+) {
+  try {
+    const collectionRef = getRef("last_modified");
+    const documentRef = collectionRef.doc(documentId);
+    const time = new Date();
+
+    await documentRef.set({
+      last_modified: time,
+    });
+
+    console.log(
+      `Document ${documentId} successfully created/updated with last_modified time`
+    );
+  } catch (error) {
+    console.error(`Failed to create/update document ${documentId}:`, error);
+  }
+}
 
 async function getData(
   sources: JSONAPISource[],
@@ -107,16 +126,17 @@ async function getData(
           for (const element of result) {
             const ref = await param.func(element, source);
             const ids = extractID(element.relationships);
-            if (element.attributes.image_url) {
-              const host = source.requestProcessor.urlBuilder.host;
-              const fullImageUrl = `${host}${element.attributes.image_url}`;
-              try {
-                
-                const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
-                element.attributes.image_url = newImageUrl;
-              } catch (error) {
-                console.error("Failed to upload image: ", error);
-                continue;
+            if (param.time) {
+              if (element.attributes.image_url) {
+                const host = source.requestProcessor.urlBuilder.host;
+                const fullImageUrl = `${host}${element.attributes.image_url}`;
+                try {
+                  const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
+                  element.attributes.image_url = newImageUrl;
+                } catch (error) {
+                  console.error("Failed to upload image: ", error);
+                  continue;
+                }
               }
             }
             batch.set(ref, {
