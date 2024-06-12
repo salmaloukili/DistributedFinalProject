@@ -13,6 +13,7 @@ interface JSONAPIParams {
   include?: string[];
   func?: Function;
 }
+
 function extractID(relationships) {
   const idsByType = {};
   for (const key in relationships) {
@@ -53,23 +54,34 @@ async function uploadImage(fullImageUrl, storageImageUrl) {
   return storageImageUrl;
 }
 
-async function updateLastModified(
-  documentId: string,
-) {
+async function updateLastModified(documentId: string) {
   try {
-    const collectionRef = getRef("last_modified");
+    const collectionRef = db.collection("last_modified");
     const documentRef = collectionRef.doc(documentId);
     const time = new Date();
 
     await documentRef.set({
       last_modified: time,
     });
-
-    console.log(
-      `Document ${documentId} successfully created/updated with last_modified time`
-    );
   } catch (error) {
     console.error(`Failed to create/update document ${documentId}:`, error);
+  }
+}
+
+async function getLastModified(documentId: string) {
+  try {
+    const collectionRef = db.collection("last_modified");
+    const documentRef = collectionRef.doc(documentId);
+    const docSnapshot = await documentRef.get();
+
+    if (!docSnapshot.exists) {
+      return -1;
+    } else {
+      return docSnapshot.data().last_modified.toDate();
+    }
+
+  } catch (error) {
+    console.error(`Failed to get document ${documentId}:`, error);
   }
 }
 
@@ -82,7 +94,6 @@ async function getData(
   const data: any = [];
 
   for (const source of sources) {
-    
     const vendorRef = getRef("vendors").doc(source.name);
     const vendorDoc = await vendorRef.get();
     const vendorData = vendorDoc.data();
@@ -90,7 +101,7 @@ async function getData(
       try {
         const vendorRef = getRef("vendors").doc(source.name);
         const logoUrl = `vendor_logos/${source.name}`;
-        const host = sources[0].requestProcessor.urlBuilder.host;
+        const host = source.requestProcessor.urlBuilder.host;
         const oldLogoUrl = `${host}/logo`;
         const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
         const logoUrlField = { logo_url: newLogoUrl };
@@ -101,19 +112,18 @@ async function getData(
       }
     }
     
+    const time = await getLastModified(source.name);
     for (const param of params) {
       try {
-        // TODO
-        const time = Date.now();
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
           // This checks if the time is set. If it is, it will get only newer data 
           // otherwise it queries all of them
-          if (param.time) {
+          if (time != -1) {
             _q = _q.filter({
               attribute: "modified_at",
               op: "gt", 
-              value: param.time.toJSON().replace("T", " "),
+              value: time.toJSON().replace("T", " "),
             });
           }
           return _q.options({ include: param.include });
@@ -121,12 +131,12 @@ async function getData(
 
         const result: any = await query;
         const batch = db.batch();
-        
+
         if (upload) {
           for (const element of result) {
             const ref = await param.func(element, source);
             const ids = extractID(element.relationships);
-            if (param.time) {
+            if (time != -1) {
               if (element.attributes.image_url) {
                 const host = source.requestProcessor.urlBuilder.host;
                 const fullImageUrl = `${host}${element.attributes.image_url}`;
@@ -145,6 +155,7 @@ async function getData(
             });
           }
         }
+        await updateLastModified(source.name);
         await batch.commit();
         data.push(result);
       } catch (error) {
@@ -162,15 +173,6 @@ exports.test = functions.https.onRequest((req, res) => {
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    const now = new Date();
-    const seatTime = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      16,
-      0,
-      0
-    );
     const data = await getData(
       sources.transport,
       [
@@ -179,7 +181,6 @@ exports.queryTransport = functions
           include: ["schedules"],
           func: async (doc: any, src: any) =>
             getRef("buses", src.name).doc(doc.id),
-          // time: busTime,
         },
         {
           obj: "Schedule",
@@ -205,7 +206,6 @@ exports.queryTransport = functions
               doc.attributes.schedule_id
             ).doc(doc.id);
           },
-          time: seatTime  
         },
       ],
       true
