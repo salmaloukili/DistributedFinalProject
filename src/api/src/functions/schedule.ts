@@ -7,7 +7,6 @@ import { ref, uploadBytes } from "firebase/storage";
 
 interface JSONAPIParams {
   obj: string;
-  time?: Date;
   include?: string[];
   func?: Function;
 }
@@ -85,8 +84,7 @@ async function getLastModified(documentId: string) {
 
 async function getData(
   sources: JSONAPISource[],
-  params: JSONAPIParams[],
-  upload?: boolean
+  params: JSONAPIParams[]
 ) {
   const data: any = [];
 
@@ -113,8 +111,7 @@ async function getData(
       try {
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
-          // This checks if the time is set. If it is, it will get only newer data
-          // otherwise it queries all of them
+          
           if (time != -1) {
             _q = _q.filter({
               attribute: "modified_at",
@@ -128,29 +125,28 @@ async function getData(
         const result: any = await query;
         const batch = db.batch();
 
-        if (upload) {
-          for (const element of result) {
-            const ref = await param.func(element, source);
-            const ids = extractID(element.relationships);
-            if (time != -1) {
-              if (element.attributes.image_url) {
-                const host = source.requestProcessor.urlBuilder.host;
-                const fullImageUrl = `${host}${element.attributes.image_url}`;
-                try {
-                  const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
-                  element.attributes.image_url = newImageUrl;
-                } catch (error) {
-                  console.error("Failed to upload image: ", error);
-                  continue;
-                }
+        for (const element of result) {
+          const ref = await param.func(element, source);
+          const ids = extractID(element.relationships);
+          if (time != -1) {
+            if (element.attributes.image_url) {
+              const host = source.requestProcessor.urlBuilder.host;
+              const fullImageUrl = `${host}${element.attributes.image_url}`;
+              try {
+                const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
+                element.attributes.image_url = newImageUrl;
+              } catch (error) {
+                console.error("Failed to upload image: ", error);
+                continue;
               }
             }
-            batch.set(ref, {
-              ...element.attributes,
-              relationships: ids,
-            });
           }
+          batch.set(ref, {
+            ...element.attributes,
+            relationships: ids,
+          });
         }
+
         await updateLastModified(source.name);
         await batch.commit();
         data.push(result);
@@ -204,7 +200,6 @@ exports.queryTransport = functions
           },
         },
       ],
-      true
     );
     res.json(data);
   });
@@ -228,7 +223,6 @@ exports.queryCatering = functions
             getRef("meals", src.name, doc.attributes.menu_id).doc(doc.id),
         },
       ],
-      true
     );
 
     res.json(data);
@@ -272,7 +266,6 @@ exports.queryVenues = functions
           },
         },
       ],
-      true
     );
     res.json(data);
   });
