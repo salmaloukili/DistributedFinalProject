@@ -60,24 +60,28 @@ async function getData(
   upload?: boolean
 ) {
 
-  if (upload) {
-    try {
-      const vendorRef = getRef("vendors").doc(sources[0].name);
-      const logoUrl = `vendor_logos/${sources[0].name}`;
-      const host = sources[0].requestProcessor.urlBuilder.host;
-      const oldLogoUrl = `${host}/logo`;
-      const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
-      const logoUrlField = { logo_url: newLogoUrl };
-
-      await vendorRef.update(logoUrlField);
-    } catch (error) {
-      console.error("Faield to upload logo: ", error);
-    }
-  }
-
   const data: any = [];
 
   for (const source of sources) {
+    
+    const vendorRef = getRef("vendors").doc(source.name);
+    const vendorDoc = await vendorRef.get();
+    const vendorData = vendorDoc.data();
+    if (!vendorData.logo_url) {
+      try {
+        const vendorRef = getRef("vendors").doc(source.name);
+        const logoUrl = `vendor_logos/${source.name}`;
+        const host = sources[0].requestProcessor.urlBuilder.host;
+        const oldLogoUrl = `${host}/logo`;
+        const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
+        const logoUrlField = { logo_url: newLogoUrl };
+
+        await vendorRef.update(logoUrlField);
+      } catch (error) {
+        console.error("Faield to upload logo: ", error);
+      }
+    }
+    
     for (const param of params) {
       try {
         // TODO
@@ -89,7 +93,7 @@ async function getData(
           if (param.time) {
             _q = _q.filter({
               attribute: "modified_at",
-              op: "gt",
+              op: "gt", 
               value: param.time.toJSON().replace("T", " "),
             });
           }
@@ -107,7 +111,8 @@ async function getData(
               const host = source.requestProcessor.urlBuilder.host;
               const fullImageUrl = `${host}${element.attributes.image_url}`;
               try {
-                const newImageUrl = await uploadImage(fullImageUrl, element.attributes.image_url);
+                
+                const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
                 element.attributes.image_url = newImageUrl;
               } catch (error) {
                 console.error("Failed to upload image: ", error);
@@ -137,9 +142,15 @@ exports.test = functions.https.onRequest((req, res) => {
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
-    // TODO
-    // Make query to firestore
-    // const busTime, schedTime;
+    const now = new Date();
+    const seatTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      16,
+      0,
+      0
+    );
     const data = await getData(
       sources.transport,
       [
@@ -174,6 +185,7 @@ exports.queryTransport = functions
               doc.attributes.schedule_id
             ).doc(doc.id);
           },
+          time: seatTime  
         },
       ],
       true
