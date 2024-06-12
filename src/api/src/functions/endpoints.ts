@@ -2,12 +2,7 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { getRef } from "../firebase";
 import sources from "../orbit/sources";
-<<<<<<< Updated upstream
 import { ServerError } from "@orbit/jsonapi";
-=======
-import { ValidationError } from "@orbit/records";
-import { error } from "firebase-functions/logger";
->>>>>>> Stashed changes
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -42,12 +37,24 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   const eventVendor = await getRef("vendors")
     .doc(request.data.event.ref.split("/")[1])
     .get();
+  const transportVendor = await getRef("vendors")
+    .doc(request.data.transportation.ref.split("/")[1])
+    .get();
+  const cateringVendor = await getRef("vendors")
+    .doc(request.data.food.ref.split("/")[1])
+    .get();
+  
 
-  const correctVendor = sources.venues.find((v) => v.name === eventVendor.id);
+  console.log(request.data)
 
-  if (!correctVendor) {
+  const correctVenueVendor = sources.venues.find((v) => v.name === eventVendor.id);
+  console.log("vendor is: ")
+  console.log(correctVenueVendor);
+
+
+  if (!correctVenueVendor) {
     return "Error";
-  }
+  } 
 
   const dt = new Date();
   const newTicket = {
@@ -55,26 +62,95 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     attributes: {
       sold_date: dt, // Set current date for sold_date
       status: "reserved",
-      price: request.data.event.price,
-      user_id: request.auth?.uid,
+      // price: request.data.event.max_price,
+      user_id: `${request.auth?.uid}-${Date.now()}`,
       event_id: parseInt(request.data.event.id, 10),
       removed: false, 
     },
   };
-  let response;
+  let response1;
   try {
-    response = (await correctVendor.update((t) =>
-      t.addRecord(newTicket)
-    ));
+    response1 = await correctVenueVendor.update((t) => t.addRecord(newTicket));
+
+    console.log("response returned")
+    console.log(response1)
   } catch (error) {
     const e = error as ServerError;
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
+
+  const correctTransportVendor = sources.transport.find((v) => v.name === transportVendor.id);
+  console.log("transport vendor is: ")
+  console.log(correctTransportVendor)
+
+  if (!correctTransportVendor) {
+    return "Error";
+  } 
+
+  console.log("transport vendor exists")
+
+  const newSeat = {
+    type: "Seat", // Ensure the type matches your schema
+    attributes: {
+      sold_date: dt, // Set current date for sold_date
+      status: "reserved",
+      // price: request.data.event.max_price,
+      user_id: `${request.auth?.uid}-${Date.now()}`,
+      schedule_id: parseInt(request.data.transportation.id, 10),
+      removed: false, 
+    },
+  };
+
+  let response2;
+  try {
+    response2 = await correctTransportVendor.update((t) =>
+      t.addRecord(newSeat)
+    );
+    console.log("response returned from transport")
+    console.log(response2)
+  } catch (error) {
+    const e = error as ServerError;
+    console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
+    console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
+  }
+
+  const correctCateringVendor = sources.catering.find((v) => v.name === cateringVendor.id);
+  console.log("catering vendor is: ")
+  console.log(correctCateringVendor)
+
+  if (!correctCateringVendor) {
+    return "Error";
+  } 
+
+  const newMeal = {
+    type: "Meal", // Ensure the type matches your schema
+    attributes: {
+      sold_date: dt, // Set current date for sold_date
+      status: "reserved",
+      // price: request.data.event.max_price,
+      user_id: `${request.auth?.uid}-${Date.now()}`,
+      menu_id: parseInt(request.data.food.id, 10),
+      removed: false,
+    },
+  };
+
+  let response3;
+  try {
+    response3 = await correctCateringVendor.update((t) => t.addRecord(newMeal));
+    console.log("response returned from catering");
+    console.log(response3);
+  } catch (error) {
+    const e = error as ServerError;
+    console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
+    console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
+  }
+
+
   // TODO: ADD the data to firebase
   // TODO: Do all other vendors.
   // TODO: Purchases
   // TODO: Make sure salma gets the errors so she can display them.
   // TODO: Test for errors (full venue), disconnectedvendor, etc.
-  return response;
+  return response1;
 });
