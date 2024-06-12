@@ -2,7 +2,12 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { getRef } from "../firebase";
 import sources from "../orbit/sources";
+<<<<<<< Updated upstream
 import { ServerError } from "@orbit/jsonapi";
+=======
+import { ValidationError } from "@orbit/records";
+import { error } from "firebase-functions/logger";
+>>>>>>> Stashed changes
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -53,14 +58,14 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
       price: request.data.event.price,
       user_id: request.auth?.uid,
       event_id: parseInt(request.data.event.id, 10),
-      removed: false, // Assuming this field is nullable and not yet removed
+      removed: false, 
     },
   };
   let response;
   try {
     response = (await correctVendor.update((t) =>
       t.addRecord(newTicket)
-    )) as any;
+    ));
   } catch (error) {
     const e = error as ServerError;
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
