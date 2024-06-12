@@ -27,7 +27,6 @@ import { getDownloadURL, ref } from 'firebase/storage';
 
 function TransportationOption({ option, setSelectedTransportation, handleNext }) {
   const [imageUrl, setImageUrl] = useState('');
-
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -96,6 +95,7 @@ function TransportationOption({ option, setSelectedTransportation, handleNext })
 
 function FoodOption({ option, setSelectedFood, handleNext }) {
   const [imageUrl, setImageUrl] = useState('');
+
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -265,12 +265,9 @@ export default function EventDetails() {
         transportation: selectedTransportation,
         food: selectedFood,
       });
-      
-      
     } catch (error) {
       console.error('Error reserving:', error);
     }
-    
   };
 
   const renderTransportationOptions = () => (

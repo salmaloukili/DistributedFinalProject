@@ -1,0 +1,222 @@
+{
+  "getEvents": [
+    {
+      "id": "1",
+      "ref": "vendors/PQSwnqknalhyBW8qPB2a/venues/1/events/1",
+      "date": {
+        "_seconds": 1718064000,
+        "_nanoseconds": 0
+      },
+      "relationships": {
+        "ticket": ["1", "2", "3"]
+      },
+      "max_price": 57,
+      "removed": true,
+      "image_url": "images/PQSwnqknalhyBW8qPB2a/venues/img/1",
+      "price": 12,
+      "genre": "Soundtrack",
+      "name": "Ergonomic neutral productivity",
+      "created_at": {
+        "_seconds": 1718214495,
+        "_nanoseconds": 822000000
+      },
+      "modified_at": {
+        "_seconds": 1718214495,
+        "_nanoseconds": 822000000
+      },
+      "venue_id": 1,
+      "vendor": {
+        "number": "2",
+        "logo_url": "vendor_logos/PQSwnqknalhyBW8qPB2a",
+        "name": "Casteleyn, Faes en Vanhove CommV",
+        "type": "Venue",
+        "url": "http://127.0.0.1:5000",
+        "token": "token"
+      },
+      "venue": {
+        "relationships": {
+          "event": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+        },
+        "removed": true,
+        "name": "Janssens CV",
+        "created_at": {
+          "_seconds": 1718214495,
+          "_nanoseconds": 815000000
+        },
+        "location": "Noasteeg 0\n1547\nNiverlée",
+        "modified_at": {
+          "_seconds": 1718214495,
+          "_nanoseconds": 815000000
+        },
+        "capacity": 374
+      }
+    }
+  ],
+  "getTransportation": [
+    {
+      "id": "1",
+      "ref": "vendors/AF8iRt7qkZfQ1cAj1D6z/buses/1/schedules/1",
+      "relationships": {
+        "seat": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+      },
+      "removed": true,
+      "price": 37.78,
+      "departure_date": {
+        "_seconds": 1718582400,
+        "_nanoseconds": 0
+      },
+      "origin": "Noville-sur-Méhaigne",
+      "created_at": {
+        "_seconds": 1718214495,
+        "_nanoseconds": 271000000
+      },
+      "bus_id": 1,
+      "modified_at": {
+        "_seconds": 1718214495,
+        "_nanoseconds": 271000000
+      },
+      "bus": {
+        "relationships": {
+          "schedule": ["1", "2", "3"]
+        },
+        "removed": true,
+        "image_url": "images/AF8iRt7qkZfQ1cAj1D6z/transport/img/1",
+        "created_at": {
+          "_seconds": 1718214495,
+          "_nanoseconds": 260000000
+        },
+        "model": "2009 Audi TT",
+        "modified_at": {
+          "_seconds": 1718214495,
+          "_nanoseconds": 260000000
+        },
+        "capacity": 59
+      },
+      "vendor": {
+        "number": "3",
+        "logo_url": "vendor_logos/AF8iRt7qkZfQ1cAj1D6z",
+        "name": "Callens VOF",
+        "type": "Transport",
+        "url": "http://127.0.0.1:5000",
+        "token": "token"
+      }
+    }
+  ],
+  "getFood": [
+    {
+      "id": "4",
+      "ref": "vendors/1BMkjSaBtyDLbtbanY18/menus/4",
+      "relationships": {
+        "meal": ["24", "25", "26", "27", "28", "29", "30", "31", "32", "33"]
+      },
+      "removed": false,
+      "image_url": "images/1BMkjSaBtyDLbtbanY18/catering/img/4",
+      "price": 87.33,
+      "limit": 46,
+      "created_at": {
+        "_seconds": 1718214508,
+        "_nanoseconds": 468000000
+      },
+      "description": "Three egg omelet with Roquefort cheese, chives, and ham. With a side of roasted potatoes, and your choice of toast or croissant.",
+      "modified_at": {
+        "_seconds": 1718214508,
+        "_nanoseconds": 468000000
+      },
+      "drink": "Incaberries Juice",
+      "food": "Pasta and Beans",
+      "vendor": {
+        "number": "1",
+        "logo_url": "vendor_logos/1BMkjSaBtyDLbtbanY18",
+        "name": "Geens-Peeters VOF",
+        "type": "Catering",
+        "url": "http://127.0.0.1:5000",
+        "token": "token"
+      }
+    }
+  ],
+  "reservePackage": {
+    "package": {
+      "id": "adsnkndaskijansdkld",
+      "ticket": {
+        "id": 10,
+        "user_id": "3458a748-e9bb-47bc-a3f2-c9bf9c6316b9",
+        "event_id": 0,
+        "price": 66.61, // Salma, this is the true price of the ticket, the one you have from the event is indicative.
+        "sold_date": "2024-05-30",
+        "status": "bought",
+        "created_at": "2024-06-12 18:36:41.736004+00:00",
+        "modified_at": "2024-06-12 18:36:41.736485+00:00",
+        "removed": false
+      },
+      "meal": {
+        "id": 10,
+        "user_id": "d71037d1-b83e-40ec-97e0-aa3c03983ca8",
+        "menu_id": 0,
+        "meal_date": "2024-06-11",
+        "status": "bought",
+        "created_at": "2024-06-12 18:36:41.736004+00:00",
+        "modified_at": "2024-06-12 18:36:41.736485+00:00",
+        "removed": false
+      },
+      "seat": {
+        "id": 1,
+        "user_id": "eb2083e6-ce16-4dba-8ff1-8e0242af9fc3",
+        "schedule_id": 0,
+        "sold_date": "2023-12-29",
+        "status": "bought",
+        "created_at": "2024-06-12 18:36:41.736004+00:00",
+        "modified_at": "2024-06-12 18:36:41.736485+00:00",
+        "removed": false
+      }
+    },
+    "result": {
+      "valid": true,
+      "message": ""
+    }
+  },
+  "buyPackage": {
+    "result": {
+      "valid": true,
+      "message": ""
+    }
+  },
+  "getAllUsers": [
+    {
+      "uid": "5exEw4o8NEyIYOKY4ZbSGbYZGphp",
+      "email": "orange.raccoon.146@example.com",
+      "emailVerified": true,
+      "displayName": "Admin User",
+      "photoURL": "",
+      "phoneNumber": null,
+      "disabled": false,
+      "metadata": {
+        "creationTime": "Wed, 12 Jun 2024 17:49:43 GMT",
+        "lastSignInTime": "Wed, 12 Jun 2024 19:11:37 GMT",
+        "lastRefreshTime": "Wed, 12 Jun 2024 19:11:37 GMT"
+      },
+      "providerData": [
+        {
+          "uid": "5657787455335027194014255365312269044803",
+          "displayName": "Admin User",
+          "email": "orange.raccoon.146@example.com",
+          "photoURL": null,
+          "providerId": "google.com",
+          "phoneNumber": null
+        },
+        {
+          "uid": "orange.raccoon.146@example.com",
+          "displayName": "Admin User",
+          "email": "orange.raccoon.146@example.com",
+          "photoURL": "",
+          "providerId": "password",
+          "phoneNumber": null
+        }
+      ],
+      "customClaims": {
+        "role": "admin"
+      },
+      "tokensValidAfterTime": "Wed, 12 Jun 2024 18:36:25 GMT",
+      "tenantId": null
+    }
+  ]
+}

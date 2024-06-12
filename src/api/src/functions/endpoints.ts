@@ -11,6 +11,7 @@ exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
     .collection("vendors")
     .where("type", "==", "Venue")
     .get();
+  const venues = await base.db.collectionGroup("venues").get();
 
   const data = querySnapshot.docs.map((doc) => {
     return {
@@ -19,6 +20,11 @@ exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
       ...doc.data(),
       vendor: vendors.docs
         .find((vn) => vn.id === doc.ref.path.split("/").at(1))
+        ?.data(),
+      venue: venues.docs
+        .find(
+          (ve) => ve.ref.path.split("/").at(1) === doc.ref.path.split("/").at(1)
+        )
         ?.data(),
     };
   });
@@ -77,6 +83,26 @@ exports.getFood = onCall({ region: "europe-west1" }, async (request) => {
   return data;
 });
 
+exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
+  if (
+    request.auth?.uid &&
+    (await base.auth.getUser(request.auth.uid)).customClaims?.role === "admin"
+  ) {
+    const allUsers: any = [];
+    const listAllUsers = async (nextPageToken?: string) => {
+      const res = await base.auth.listUsers(1000, nextPageToken);
+      allUsers.push(...res.users);
+      if (res.pageToken) {
+        await listAllUsers(res.pageToken);
+      }
+    };
+    
+    await listAllUsers();
+    return allUsers;
+  }
+  return "Authentication Error";
+});
+
 exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   const eventVendor = await getRef("vendors")
     .doc(request.data.event.ref.split("/")[1])
@@ -87,18 +113,18 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   const cateringVendor = await getRef("vendors")
     .doc(request.data.food.ref.split("/")[1])
     .get();
-  
 
-  console.log(request.data)
+  console.log(request.data);
 
-  const correctVenueVendor = sources.venues.find((v) => v.name === eventVendor.id);
-  console.log("vendor is: ")
+  const correctVenueVendor = sources.venues.find(
+    (v) => v.name === eventVendor.id
+  );
+  console.log("vendor is: ");
   console.log(correctVenueVendor);
-
 
   if (!correctVenueVendor) {
     return "Error";
-  } 
+  }
 
   const dt = new Date();
   const newTicket = {
@@ -109,30 +135,32 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
       // price: request.data.event.max_price,
       user_id: `${request.auth?.uid}-${Date.now()}`,
       event_id: parseInt(request.data.event.id, 10),
-      removed: false, 
+      removed: false,
     },
   };
   let response1;
   try {
     response1 = await correctVenueVendor.update((t) => t.addRecord(newTicket));
 
-    console.log("response returned")
-    console.log(response1)
+    console.log("response returned");
+    console.log(response1);
   } catch (error) {
     const e = error as ServerError;
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
 
-  const correctTransportVendor = sources.transport.find((v) => v.name === transportVendor.id);
-  console.log("transport vendor is: ")
-  console.log(correctTransportVendor)
+  const correctTransportVendor = sources.transport.find(
+    (v) => v.name === transportVendor.id
+  );
+  console.log("transport vendor is: ");
+  console.log(correctTransportVendor);
 
   if (!correctTransportVendor) {
     return "Error";
-  } 
+  }
 
-  console.log("transport vendor exists")
+  console.log("transport vendor exists");
 
   const newSeat = {
     type: "Seat", // Ensure the type matches your schema
@@ -142,7 +170,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
       // price: request.data.event.max_price,
       user_id: `${request.auth?.uid}-${Date.now()}`,
       schedule_id: parseInt(request.data.transportation.id, 10),
-      removed: false, 
+      removed: false,
     },
   };
 
@@ -151,21 +179,23 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     response2 = await correctTransportVendor.update((t) =>
       t.addRecord(newSeat)
     );
-    console.log("response returned from transport")
-    console.log(response2)
+    console.log("response returned from transport");
+    console.log(response2);
   } catch (error) {
     const e = error as ServerError;
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
 
-  const correctCateringVendor = sources.catering.find((v) => v.name === cateringVendor.id);
-  console.log("catering vendor is: ")
-  console.log(correctCateringVendor)
+  const correctCateringVendor = sources.catering.find(
+    (v) => v.name === cateringVendor.id
+  );
+  console.log("catering vendor is: ");
+  console.log(correctCateringVendor);
 
   if (!correctCateringVendor) {
     return "Error";
-  } 
+  }
 
   const newMeal = {
     type: "Meal", // Ensure the type matches your schema
@@ -189,7 +219,6 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
-
 
   // TODO: ADD the data to firebase
   // TODO: Do all other vendors.
