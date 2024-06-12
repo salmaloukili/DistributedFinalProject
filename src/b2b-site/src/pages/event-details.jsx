@@ -252,7 +252,7 @@ export default function EventDetails() {
       seat: selectedSeat,
       transportation: selectedTransportation,
       food: selectedFood,
-      total: selectedTransportation.price + selectedFood.data.price + event.max_price,
+      total: selectedTransportation.price + selectedFood.price + event.max_price,
     };
     addToCart(packageItem);
     closeModal();
@@ -325,12 +325,12 @@ export default function EventDetails() {
               Transportation: {selectedTransportation?.origin} - {selectedTransportation?.price} EUR
             </Typography>
             <Typography>
-              Food: {selectedFood?.data.food} - {selectedFood?.data.price} EUR
+              Food: {selectedFood?.food} - {selectedFood?.price} EUR
             </Typography>
             <Typography>
               Total:{' '}
               {(selectedTransportation?.price || 0) +
-                (selectedFood?.data?.price || 0) +
+                (selectedFood?.price || 0) +
                 (event.max_price || 0)}{' '}
               EUR
             </Typography>
