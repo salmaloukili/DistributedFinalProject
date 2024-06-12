@@ -18,8 +18,28 @@ exports.getTransportation = onCall(
   { region: "europe-west1" },
   async (request) => {
     const querySnapshot = await base.db.collectionGroup("schedules").get();
+    const buses = await base.db.collectionGroup("buses").get();
+    const vendors = await base.db
+      .collection("vendors")
+      .where("type", "==", "Transport")
+      .get();
+
     const data = querySnapshot.docs.map((doc) => {
-      return { id: doc.id, ref: doc.ref.path, ...doc.data() };
+      const docData = doc.data();
+      return {
+        id: doc.id,
+        ref: doc.ref.path,
+        ...docData,
+        bus: buses.docs
+          .find(
+            (bus) =>
+              bus.ref.path.split("/").at(1) === doc.ref.path.split("/").at(1)
+          )
+          ?.data(),
+        vendor: vendors.docs
+          .find((vn) => vn.id === doc.ref.path.split("/").at(1))
+          ?.data(),
+      };
     });
     return data;
   }
@@ -27,8 +47,20 @@ exports.getTransportation = onCall(
 
 exports.getFood = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db.collectionGroup("menus").get();
+  const vendors = await base.db
+    .collection("vendors")
+    .where("type", "==", "Catering")
+    .get();
+
   const data = querySnapshot.docs.map((doc) => {
-    return { id: doc.id, ref: doc.ref.path, data: { ...doc.data() } };
+    return {
+      id: doc.id,
+      ref: doc.ref.path,
+      ...doc.data(),
+      vendor: vendors.docs
+        .find((vn) => vn.id === doc.ref.path.split("/").at(1))
+        ?.data(),
+    };
   });
   return data;
 });

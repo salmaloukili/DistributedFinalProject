@@ -47,13 +47,18 @@ interface VendorSecret {
 
 function buildJSONSource(secret: VendorSecret, schema, namespace) {
   try {
-    getRef("vendors").doc(secret.VENDOR_NAME).set({
-      name: secret.VENDOR_COMPANY_NAME,
-      type: secret.VENDOR_COMPANY_TYPE,
-      number: secret.VENDOR_NUMBER,
-      token: secret.VENDOR_SECRET_TOKEN,
-      url: secret.VENDOR_URL,
-    });
+    getRef("vendors").doc(secret.VENDOR_NAME).set(
+      {
+        name: secret.VENDOR_COMPANY_NAME,
+        type: secret.VENDOR_COMPANY_TYPE,
+        number: secret.VENDOR_NUMBER,
+        token: secret.VENDOR_SECRET_TOKEN,
+        url: secret.VENDOR_URL,
+      },
+      {
+        merge: true,
+      }
+    );
   } catch (error) {
     console.log(error);
   }

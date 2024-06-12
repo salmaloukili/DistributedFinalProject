@@ -1,4 +1,4 @@
-
+/* eslint-disable react/prop-types */
 
 // import PropTypes from 'prop-types';
 // import { Link as RouterLink } from 'react-router-dom';
@@ -17,7 +17,7 @@
 //     <Box
 //       component="img"
 //       alt={event.name}
-//       src={randomImage || 'https://via.placeholder.com/150'} 
+//       src={randomImage || 'https://via.placeholder.com/150'}
 //       sx={{
 //         top: 0,
 //         width: 1,
@@ -38,8 +38,6 @@
 //   </Typography>
 // );
 
-
-
 //   return (
 //     <Card>
 //       <Box sx={{ pt: '100%', position: 'relative' }}>
@@ -57,7 +55,7 @@
 //       <Stack spacing={2} sx={{ p: 3 }}>
 //         <Link
 //           component={RouterLink}
-//           to={`/event/${event.id}`} 
+//           to={`/event/${event.id}`}
 //           state={{ event }}
 //           color="inherit"
 //           underline="hover"
@@ -85,8 +83,6 @@
 //   }).isRequired,
 // };
 
-
-
 // EventCard.js
 import PropTypes from 'prop-types';
 import { Link as RouterLink } from 'react-router-dom';
@@ -95,17 +91,32 @@ import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { format } from 'date-fns';
-import {images} from 'src/_mock/event-images';
 import ImageComponent from 'src/components/firebase-image';
+import { useEffect, useState } from 'react';
+import { storage } from 'src/utils/firebase';
+import { getDownloadURL, ref } from 'firebase/storage';
 
 export default function EventCard({ event }) {
-  const randomImage = images[Math.floor(Math.random() * images.length)].image;
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, event.image_url);
+        const url = await getDownloadURL(storageRef);
+        setImageUrl(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [event.image_url]);
   const renderImg = (
     <Box
       component="img"
       alt={event.name}
-      src={randomImage || 'https://via.placeholder.com/150'} 
+      src={imageUrl}
       sx={{
         top: 0,
         width: 1,

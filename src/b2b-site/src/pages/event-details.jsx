@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import {
@@ -13,11 +14,145 @@ import {
   Grid,
 } from '@mui/material';
 import { CartContext } from 'src/context/CartContext';
-import { getCallable } from 'src/utils/firebase';
-import { mockTransportationOptions } from 'src/_mock/transportation';
+import { getCallable, storage } from 'src/utils/firebase';
 import { images } from 'src/_mock/event-images';
 import ImageComponent from 'src/components/firebase-image';
+import { getDownloadURL, ref } from 'firebase/storage';
 
+function TransportationOption({ option, setSelectedTransportation, handleNext }) {
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.bus.image_url);
+        const url = await getDownloadURL(storageRef);
+        setImageUrl(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.bus.image_url]);
+
+  const [logoURL, setLogoURL] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.vendor.logo_url);
+        const url = await getDownloadURL(storageRef);
+        setLogoURL(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.vendor.logo_url]);
+
+  return (
+    <Grid item xs={12} sm={6} key={option.id}>
+      <Card
+        onClick={() => {
+          setSelectedTransportation(option);
+          handleNext();
+        }}
+      >
+        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardContent>
+          <Typography variant="h6">Bus Model: {''}</Typography>
+          <Typography variant="body1">Origin: {option.origin}</Typography>
+          <Typography variant="body1">Price: {option.price} EUR</Typography>
+          <Typography variant="body1">
+            Departure Date: {new Date(option.departure_date._seconds * 1000).toLocaleDateString()}
+          </Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid white',
+            }}
+          >
+            <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+}
+
+function FoodOption({ option, setSelectedFood, handleNext }) {
+  const [imageUrl, setImageUrl] = useState('');
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.image_url);
+        const url = await getDownloadURL(storageRef);
+        setImageUrl(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.image_url]);
+
+  const [logoURL, setLogoURL] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const storageRef = ref(storage, option.vendor.logo_url);
+        const url = await getDownloadURL(storageRef);
+        setLogoURL(url);
+      } catch (error) {
+        console.error('Error fetching image:', error);
+      }
+    };
+
+    fetchImage();
+  }, [option.vendor.logo_url]);
+
+  return (
+    <Grid item xs={12} sm={6} key={option.id}>
+      <Card
+        onClick={() => {
+          setSelectedFood(option);
+          handleNext();
+        }}
+      >
+        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardContent>
+          <Typography variant="h6">Food: {option.food}</Typography>
+          <Typography variant="h6">Drink: {option.drink}</Typography>
+          <Typography variant="body1">Description: {option.description}</Typography>
+          <Typography variant="body1">Price: {option.price} EUR</Typography>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid white',
+            }}
+          >
+            <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+}
 export default function EventDetails() {
   const { id } = useParams();
   const location = useLocation();
@@ -121,81 +256,26 @@ export default function EventDetails() {
 
   const renderTransportationOptions = () => (
     <Grid container spacing={2}>
-      {transportationOptions.map((option) => (
-        <Grid item xs={12} sm={6} key={option.id}>
-          <Card
-            onClick={() => {
-              setSelectedTransportation(option);
-              handleNext();
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6">Bus Model: {''}</Typography>
-              <Typography variant="body1">Origin: {option.origin}</Typography>
-              <Typography variant="body1">Price: {option.price} EUR</Typography>
-              <Typography variant="body1">
-                Departure Date:{' '}
-                {new Date(option.departure_date._seconds * 1000).toLocaleDateString()}
-              </Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: '2px solid white',
-                }}
-              >
-                <ImageComponent filePath="logo2.jpg" style={{ width: '100%', height: 'auto' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {transportationOptions.map((opt) => (
+        <TransportationOption
+          key={opt.name + opt.id}
+          option={opt}
+          setSelectedTransportation={setSelectedTransportation}
+          handleNext={handleNext}
+        />
       ))}
     </Grid>
   );
 
   const renderFoodOptions = () => (
     <Grid container spacing={2}>
-      {foodOptions.map((option) => (
-        <Grid item xs={12} sm={6} key={option.id}>
-          <Card
-            onClick={() => {
-              setSelectedFood(option);
-              handleNext();
-            }}
-          >
-            <CardMedia
-              component="img"
-              height="140"
-              image={option.data.image || 'default-food-image.jpg'}
-              alt={option.data.food}
-            />
-            <CardContent>
-              <Typography variant="h6">Food: {option.data.food}</Typography>
-              <Typography variant="h6">Drink: {option.data.drink}</Typography>
-              <Typography variant="body1">Description: {option.data.description}</Typography>
-              <Typography variant="body1">Price: {option.data.price} EUR</Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: '2px solid white',
-                }}
-              >
-                <ImageComponent filePath="logo3.webp" style={{ width: '100%', height: 'auto' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {foodOptions.map((opt) => (
+        <FoodOption
+          key={opt.name + opt.id}
+          option={opt}
+          setSelectedFood={setSelectedFood}
+          handleNext={handleNext}
+        />
       ))}
     </Grid>
   );
