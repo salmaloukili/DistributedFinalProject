@@ -60,17 +60,19 @@ async function getData(
   upload?: boolean
 ) {
 
-  try {
-    const vendorRef = getRef("vendors").doc(sources[0].name);
-    const logoUrl = `vendor_logos/${sources[0].name}`;
-    const host = sources[0].requestProcessor.urlBuilder.host;
-    const oldLogoUrl = `${host}/logo`;
-    const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
-    const logoUrlField = { logo_url: newLogoUrl };
+  if (upload) {
+    try {
+      const vendorRef = getRef("vendors").doc(sources[0].name);
+      const logoUrl = `vendor_logos/${sources[0].name}`;
+      const host = sources[0].requestProcessor.urlBuilder.host;
+      const oldLogoUrl = `${host}/logo`;
+      const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
+      const logoUrlField = { logo_url: newLogoUrl };
 
-    await vendorRef.update(logoUrlField);
-  } catch (error) {
-    console.error("Faield to upload logo: ", error);
+      await vendorRef.update(logoUrlField);
+    } catch (error) {
+      console.error("Faield to upload logo: ", error);
+    }
   }
 
   const data: any = [];
