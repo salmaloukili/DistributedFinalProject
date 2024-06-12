@@ -139,6 +139,7 @@
       "id": "adsnkndaskijansdkld",
       "ticket": {
         "id": 10,
+        "ref": "vendors/PQSwnqknalhyBW8qPB2a/venues/1/events/1/tickets/10",
         "user_id": "3458a748-e9bb-47bc-a3f2-c9bf9c6316b9",
         "event_id": 0,
         "price": 66.61, // Salma, this is the true price of the ticket, the one you have from the event is indicative.
@@ -150,6 +151,7 @@
       },
       "meal": {
         "id": 10,
+        "ref": "vendors/PQSwnqknalhyBW8qPB2a/menus/1/meals/10",
         "user_id": "d71037d1-b83e-40ec-97e0-aa3c03983ca8",
         "menu_id": 0,
         "meal_date": "2024-06-11",
@@ -160,6 +162,7 @@
       },
       "seat": {
         "id": 1,
+        "ref": "vendors/PQSwnqknalhyBW8qPB2a/bus/1/schedule/1/seat/1",
         "user_id": "eb2083e6-ce16-4dba-8ff1-8e0242af9fc3",
         "schedule_id": 0,
         "sold_date": "2023-12-29",
