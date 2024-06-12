@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Distributed Final Project",
   "scripts": {
-    "watch:firebase": "firebase emulators:start --only=functions,firestore,auth,storage --import=./saved-data",
+    "watch:firebase": "firebase emulators:start --only=functions,firestore,auth,storage --export-on-exit=./saved-data",
     "watch:site": "cd ./src/b2b-site/ && npm run dev",
     "watch:vendors": "cd ./src/vendors/ && flask --debug run",
     "watch:api": "cd ./src/api/ && npm run build:watch",

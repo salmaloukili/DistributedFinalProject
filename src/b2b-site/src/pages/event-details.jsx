@@ -12,11 +12,17 @@ import {
   CardMedia,
   CardContent,
   Grid,
+  Snackbar,
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import { CartContext } from 'src/context/CartContext';
 import { getCallable, storage } from 'src/utils/firebase';
 import { images } from 'src/_mock/event-images';
 import ImageComponent from 'src/components/firebase-image';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 import { getDownloadURL, ref } from 'firebase/storage';
 
 function TransportationOption({ option, setSelectedTransportation, handleNext }) {
@@ -166,6 +172,8 @@ export default function EventDetails() {
   const [selectedFood, setSelectedFood] = useState(null);
   const [transportationOptions, setTransportationOptions] = useState([]);
   const [foodOptions, setFoodOptions] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const randomImage = images[Math.floor(Math.random() * images.length)].image;
 
@@ -191,12 +199,11 @@ export default function EventDetails() {
       const result = await getTransportation(event);
       if (result.data) {
         setTransportationOptions(result.data);
-        console.log(result.data);
       } else {
-        console.error('Error fetching food options:', result.data.error);
+        console.error('Error fetching transportation options:', result.data.error);
       }
     } catch (error) {
-      console.error('Error fetching food options:', error);
+      console.error('Error fetching transportation options:', error);
     }
   };
 
@@ -231,6 +238,13 @@ export default function EventDetails() {
     if (step > 1) setStep(step - 1);
   };
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const addToCartHandler = async () => {
     const packageItem = {
       id: `${event.id}-${Date.now()}`,
@@ -241,6 +255,9 @@ export default function EventDetails() {
       total: selectedTransportation.price + selectedFood.data.price + event.max_price,
     };
     addToCart(packageItem);
+    closeModal();
+    setSnackbarMessage('Package added to cart successfully!');
+    setSnackbarOpen(true);
     const reserve = getCallable('endpoints-reserve');
     try {
       await reserve({
@@ -248,10 +265,12 @@ export default function EventDetails() {
         transportation: selectedTransportation,
         food: selectedFood,
       });
+      
+      
     } catch (error) {
       console.error('Error reserving:', error);
     }
-    closeModal();
+    
   };
 
   const renderTransportationOptions = () => (
@@ -310,7 +329,7 @@ export default function EventDetails() {
             </Typography>
             <Typography>
               Total:{' '}
-              {(selectedTransportation?.data?.price || 0) +
+              {(selectedTransportation?.price || 0) +
                 (selectedFood?.data?.price || 0) +
                 (event.max_price || 0)}{' '}
               EUR
@@ -427,6 +446,16 @@ export default function EventDetails() {
           </Stack>
         </Box>
       </Modal>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

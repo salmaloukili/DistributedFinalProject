@@ -7,8 +7,20 @@ import { ServerError } from "@orbit/jsonapi";
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db.collectionGroup("events").get();
+  const vendors = await base.db
+    .collection("vendors")
+    .where("type", "==", "Venue")
+    .get();
+
   const data = querySnapshot.docs.map((doc) => {
-    return { id: doc.id, ref: doc.ref.path, ...doc.data() };
+    return {
+      id: doc.id,
+      ref: doc.ref.path,
+      ...doc.data(),
+      vendor: vendors.docs
+        .find((vn) => vn.id === doc.ref.path.split("/").at(1))
+        ?.data(),
+    };
   });
   return data;
 });
