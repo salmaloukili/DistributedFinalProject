@@ -6,6 +6,7 @@ import { db, getRef, storage} from "../firebase";
 import { ref, uploadBytes } from "firebase/storage";
 
 
+
 interface JSONAPIParams {
   obj: string;
   time?: Date;
@@ -58,6 +59,20 @@ async function getData(
   params: JSONAPIParams[],
   upload?: boolean
 ) {
+
+  try {
+    const vendorRef = getRef("vendors").doc(sources[0].name);
+    const logoUrl = `vendor_logos/${sources[0].name}`;
+    const host = sources[0].requestProcessor.urlBuilder.host;
+    const oldLogoUrl = `${host}/logo`;
+    const newLogoUrl = await uploadImage(oldLogoUrl, logoUrl);
+    const logoUrlField = { logo_url: newLogoUrl };
+
+    await vendorRef.update(logoUrlField);
+  } catch (error) {
+    console.error("Faield to upload logo: ", error);
+  }
+
   const data: any = [];
 
   for (const source of sources) {
@@ -67,7 +82,7 @@ async function getData(
         const time = Date.now();
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
-          // This checks if the time is set. If it is, it will get only newer data
+          // This checks if the time is set. If it is, it will get only newer data 
           // otherwise it queries all of them
           if (param.time) {
             _q = _q.filter({
@@ -93,7 +108,7 @@ async function getData(
                 const newImageUrl = await uploadImage(fullImageUrl, element.attributes.image_url);
                 element.attributes.image_url = newImageUrl;
               } catch (error) {
-                console.error("Fuck this shit:", error);
+                console.error("Failed to upload image: ", error);
                 continue;
               }
             }
@@ -116,6 +131,7 @@ async function getData(
 exports.test = functions.https.onRequest((req, res) => {
   res.json(JSON.parse(process.env.VENDORS));
 });
+
 exports.queryTransport = functions
   .region("europe-west1")
   .https.onRequest(async (req, res) => {
