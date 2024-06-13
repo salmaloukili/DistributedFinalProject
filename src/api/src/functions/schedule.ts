@@ -71,6 +71,7 @@ async function getLastModified(documentId: string) {
     const documentRef = collectionRef.doc(documentId);
     const docSnapshot = await documentRef.get();
 
+    console.log("RAN LAST MODIFIED");
     if (!docSnapshot.exists) {
       return -1;
     } else {
@@ -111,7 +112,7 @@ async function getData(
       try {
         const query = source.query((q) => {
           let _q = q.findRecords(param.obj);
-          
+
           if (time != -1) {
             _q = _q.filter({
               attribute: "modified_at",
@@ -164,108 +165,109 @@ exports.test = functions.https.onRequest((req, res) => {
 
 exports.queryTransport = functions
   .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    const data = await getData(
-      sources.transport,
-      [
-        {
-          obj: "Bus",
-          include: ["schedules"],
-          func: async (doc: any, src: any) =>
-            getRef("buses", src.name).doc(doc.id),
+  .runWith({
+    timeoutSeconds: 540,
+  })
+  .pubsub.schedule("every 15 minutes")
+  .onRun(async (context) => {
+    const data = await getData(sources.transport, [
+      {
+        obj: "Bus",
+        include: ["schedules"],
+        func: async (doc: any, src: any) =>
+          getRef("buses", src.name).doc(doc.id),
+      },
+      {
+        obj: "Schedule",
+        include: ["bus", "seats"],
+        func: async (doc: any, src: any) =>
+          getRef("schedules", src.name, doc.attributes.bus_id).doc(doc.id),
+      },
+      {
+        obj: "Seat",
+        include: ["schedule"],
+        func: async (doc: any, src: any) => {
+          const ref = await getRef("vendors")
+            .doc(src.name)
+            .collection("buses")
+            .where("relationships.schedule", "array-contains-any", [
+              String(doc.attributes.schedule_id),
+            ])
+            .get();
+          return getRef(
+            "seats",
+            src.name,
+            ref.docs[0]?.id,
+            doc.attributes.schedule_id
+          ).doc(doc.id);
         },
-        {
-          obj: "Schedule",
-          include: ["bus", "seats"],
-          func: async (doc: any, src: any) =>
-            getRef("schedules", src.name, doc.attributes.bus_id).doc(doc.id),
-        },
-        {
-          obj: "Seat",
-          include: ["schedule"],
-          func: async (doc: any, src: any) => {
-            const ref = await getRef("vendors")
-              .doc(src.name)
-              .collection("buses")
-              .where("relationships.schedule", "array-contains-any", [
-                String(doc.attributes.schedule_id),
-              ])
-              .get();
-            return getRef(
-              "seats",
-              src.name,
-              ref.docs[0]?.id,
-              doc.attributes.schedule_id
-            ).doc(doc.id);
-          },
-        },
-      ],
-    );
-    res.json(data);
+      },
+    ]);
   });
 
 exports.queryCatering = functions
   .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    const data = await getData(
-      sources.catering,
-      [
-        {
-          obj: "Menu",
-          include: ["meals"],
-          func: async (doc: any, src: any) =>
-            getRef("menus", src.name).doc(doc.id),
-        },
-        {
-          obj: "Meal",
-          include: ["menu"],
-          func: async (doc: any, src: any) =>
-            getRef("meals", src.name, doc.attributes.menu_id).doc(doc.id),
-        },
-      ],
-    );
-
-    res.json(data);
+  .runWith({
+    timeoutSeconds: 540,
+  })
+  .pubsub.schedule("every 15 minutes")
+  .onRun(async (context) => {
+    const data = await getData(sources.catering, [
+      {
+        obj: "Menu",
+        include: ["meals"],
+        func: async (doc: any, src: any) =>
+          getRef("menus", src.name).doc(doc.id),
+      },
+      {
+        obj: "Meal",
+        include: ["menu"],
+        func: async (doc: any, src: any) =>
+          getRef("meals", src.name, doc.attributes.menu_id).doc(doc.id),
+      },
+    ]);
   });
 
 exports.queryVenues = functions
   .region("europe-west1")
-  .https.onRequest(async (req, res) => {
-    const data = await getData(
-      sources.venues,
-      [
-        {
-          obj: "Venue",
-          include: ["events"],
-          func: async (doc: any, src: any) =>
-            getRef("venues", src.name).doc(doc.id),
+  .runWith({
+    timeoutSeconds: 540,
+  })
+  .pubsub.schedule("every 15 minutes")
+  .onRun(async (context) => {
+    const data = await getData(sources.venues, [
+      {
+        obj: "Venue",
+        include: ["events"],
+        func: async (doc: any, src: any) =>
+          getRef("venues", src.name).doc(doc.id),
+      },
+      {
+        obj: "Event",
+        include: ["tickets", "venue"],
+        func: async (doc: any, src: any) =>
+          getRef("events", src.name, doc.attributes.venue_id).doc(doc.id),
+      },
+      {
+        obj: "Ticket",
+        include: ["event"],
+        func: async (doc: any, src: any) => {
+          const ref = await getRef("vendors")
+            .doc(src.name)
+            .collection("venues")
+            .where("relationships.event", "array-contains-any", [
+              String(doc.attributes.event_id),
+            ])
+            .get();
+          return getRef(
+            "tickets",
+            src.name,
+            ref.docs[0].id,
+            doc.attributes.event_id
+          ).doc(doc.id);
         },
-        {
-          obj: "Event",
-          include: ["tickets", "venue"],
-          func: async (doc: any, src: any) =>
-            getRef("events", src.name, doc.attributes.venue_id).doc(doc.id),
-        },
-        {
-          obj: "Ticket",
-          include: ["event"],
-          func: async (doc: any, src: any) => {
-            const ref = await getRef("vendors")
-              .doc(src.name)
-              .collection("venues")
-              .where("relationships.event", "array-contains-any", [
-                String(doc.attributes.event_id),
-              ])
-              .get();
-            return getRef(
-              "tickets",
-              src.name,
-              ref.docs[0].id,
-              doc.attributes.event_id
-            ).doc(doc.id);
-          },
-        },
-      ],
-    );
-    res.json(data);
+      },
+    ]);
   });
+
+  
