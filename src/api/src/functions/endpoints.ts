@@ -195,12 +195,13 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
 
   if (!correctCateringVendor) {
     return "Error";
-  }
+  } 
+  console.log("caterer exists")
 
   const newMeal = {
     type: "Meal", // Ensure the type matches your schema
     attributes: {
-      sold_date: dt, // Set current date for sold_date
+      meal_date: dt, // Set current date for sold_date
       status: "reserved",
       // price: request.data.event.max_price,
       user_id: `${request.auth?.uid}-${Date.now()}`,
@@ -216,14 +217,14 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     console.log(response3);
   } catch (error) {
     const e = error as ServerError;
+    console.log(e)
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
+
 
   // TODO: ADD the data to firebase
   // TODO: Do all other vendors.
   // TODO: Purchases
   // TODO: Make sure salma gets the errors so she can display them.
   // TODO: Test for errors (full venue), disconnectedvendor, etc.
-  return response1;
-});
