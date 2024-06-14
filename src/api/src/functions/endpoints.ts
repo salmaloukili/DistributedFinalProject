@@ -276,7 +276,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   return response;
 });
 
-exports.getPurchases = onCall({ region: "europe-west1" }, async (request) => {
+exports.getUserPackages = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db
     .collection("purchases")
     .where("user_id", "==", request.auth?.uid)
