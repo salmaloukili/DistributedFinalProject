@@ -96,7 +96,7 @@ exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
         await listAllUsers(res.pageToken);
       }
     };
-    
+
     await listAllUsers();
     return allUsers;
   }
@@ -291,6 +291,30 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     },
   };
 
+  let response2;
+  try {
+    response2 = await correctTransportVendor.update((t) =>
+      t.addRecord(newSeat)
+    );
+    console.log("response returned from transport");
+    console.log(response2);
+  } catch (error) {
+    const e = error as ServerError;
+    console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
+    console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
+  }
+
+  const correctCateringVendor = sources.catering.find(
+    (v) => v.name === cateringVendor.id
+  );
+  console.log("catering vendor is: ");
+  console.log(correctCateringVendor);
+
+  if (!correctCateringVendor) {
+    return "Error";
+  }
+  console.log("caterer exists");
+
   const newMeal = {
     type: "Meal",
     attributes: {
@@ -391,8 +415,8 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
 
 
 
-  // TODO: ADD the data to firebase
-  // TODO: Do all other vendors.
-  // TODO: Purchases
-  // TODO: Make sure salma gets the errors so she can display them.
-  // TODO: Test for errors (full venue), disconnectedvendor, etc.
+// TODO: ADD the data to firebase
+// TODO: Do all other vendors.
+// TODO: Purchases
+// TODO: Make sure salma gets the errors so she can display them.
+// TODO: Test for errors (full venue), disconnectedvendor, etc.

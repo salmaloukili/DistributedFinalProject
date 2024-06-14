@@ -74,11 +74,15 @@ def setup_database(app):
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
-        # company_type = random.choice(["Venue", "Transport", "Catering"])
-        company_type = "All"
+
+        if os.environ.get("VENDOR_NUMBER"):
+            company_type = random.choice(["Venue", "Transport", "Catering"])
+            secret_token = fake.password(40, False, True, True, True)
+            os.environ["VENDOR_SECRET_TOKEN"] = secret_token
+        else:
+            company_type = "All"
+        
         os.environ["VENDOR_COMPANY_TYPE"] = company_type
-        secret_token = fake.password(40, False, True, True, True)
-        os.environ["VENDOR_SECRET_TOKEN"] = secret_token
         company = fake.company()
         os.environ["VENDOR_COMPANY_NAME"] = company
         api.populate_database()
