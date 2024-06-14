@@ -102,6 +102,17 @@ exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
   return "Authentication Error";
 });
 
+exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
+  if (
+    request.auth?.uid &&
+    (await base.auth.getUser(request.auth.uid)).customClaims?.role === "admin"
+  ) {
+    const querySnapshot = await base.db.collection("purchases").get();
+    return querySnapshot.docs.map((e) => e.data());
+  }
+  return "Authentication Error";
+});
+
 exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   const dt = new Date();
 
@@ -276,15 +287,18 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   return response;
 });
 
-exports.getUserPackages = onCall({ region: "europe-west1" }, async (request) => {
-  const querySnapshot = await base.db
-    .collection("purchases")
-    .where("user_id", "==", request.auth?.uid)
-    .where("status", "==", "bought")
-    .get();
+exports.getUserPackages = onCall(
+  { region: "europe-west1" },
+  async (request) => {
+    const querySnapshot = await base.db
+      .collection("purchases")
+      .where("user_id", "==", request.auth?.uid)
+      .where("status", "==", "bought")
+      .get();
 
-  console.log(querySnapshot.docs.map((e) => e.data()));
-});
+    console.log(querySnapshot.docs.map((e) => e.data()));
+  }
+);
 
 // TODauO: ADD the data to firebase
 // TODO: Purchases

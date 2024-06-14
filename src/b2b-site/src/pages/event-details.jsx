@@ -246,25 +246,29 @@ export default function EventDetails() {
   };
 
   const addToCartHandler = async () => {
-    const packageItem = {
-      id: `${event.id}-${Date.now()}`,
-      event: event,
-      seat: selectedSeat,
-      transportation: selectedTransportation,
-      food: selectedFood,
-      total: selectedTransportation.price + selectedFood.price + event.max_price,
-    };
-    addToCart(packageItem);
-    closeModal();
-    setSnackbarMessage('Package added to cart successfully!');
-    setSnackbarOpen(true);
-    const reserve = getCallable('endpoints-reserve');
     try {
-      await reserve({
+      const response = (
+        await reserve({
+          event: event,
+          transportation: selectedTransportation,
+          food: selectedFood,
+        })
+      ).data;
+      const packageItem = {
+        id: `${event.id}-${Date.now()}`,
         event: event,
+        seat: response.seat,
         transportation: selectedTransportation,
         food: selectedFood,
-      });
+        ticket: response.ticket,
+        meal: response.meal,
+        total: selectedTransportation.price + selectedFood.price + response.ticket.price,
+      };
+      addToCart(packageItem);
+      closeModal();
+      setSnackbarMessage('Package added to cart successfully!');
+      setSnackbarOpen(true);
+      const reserve = getCallable('endpoints-reserve');
     } catch (error) {
       console.error('Error reserving:', error);
     }
