@@ -30,6 +30,9 @@ class Event(BaseModel):
     date = FunctionDefault(
         db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
     )
+    image_url = FunctionDefault(
+        db.String(100), default=lambda: f"/venues/img/{random.randint(1, 15)}"
+    )
 
     @jsonapi_attr
     def price(self):
@@ -39,16 +42,11 @@ class Event(BaseModel):
 
         return price
 
-    @jsonapi_attr
-    def image_url(self):
-        return f"/venues/img/{self.id%15}"
 
 class Ticket(BaseModel):
     __tablename__ = "tickets"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(
-        db.String(100), default=fake.uuid4, nullable=False, unique=True
-    )
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
     event = db.relationship("Event", back_populates="tickets")
     price = FunctionDefault(

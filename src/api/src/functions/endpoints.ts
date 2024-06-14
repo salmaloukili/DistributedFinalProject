@@ -96,7 +96,7 @@ exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
         await listAllUsers(res.pageToken);
       }
     };
-    
+
     await listAllUsers();
     return allUsers;
   }
@@ -195,8 +195,8 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
 
   if (!correctCateringVendor) {
     return "Error";
-  } 
-  console.log("caterer exists")
+  }
+  console.log("caterer exists");
 
   const newMeal = {
     type: "Meal", // Ensure the type matches your schema
@@ -217,14 +217,14 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     console.log(response3);
   } catch (error) {
     const e = error as ServerError;
-    console.log(e)
+    console.log(e);
     console.log((e.data as any).errors?.at(0)); // Be careful here, there might not be errors in the data.
     console.log((e.data as any).errors?.at(0)?.title); // Message might not exist.
   }
+});
 
-
-  // TODO: ADD the data to firebase
-  // TODO: Do all other vendors.
-  // TODO: Purchases
-  // TODO: Make sure salma gets the errors so she can display them.
-  // TODO: Test for errors (full venue), disconnectedvendor, etc.
+// TODO: ADD the data to firebase
+// TODO: Do all other vendors.
+// TODO: Purchases
+// TODO: Make sure salma gets the errors so she can display them.
+// TODO: Test for errors (full venue), disconnectedvendor, etc.

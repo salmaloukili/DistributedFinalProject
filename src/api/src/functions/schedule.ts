@@ -77,16 +77,12 @@ async function getLastModified(documentId: string) {
     } else {
       return docSnapshot.data().last_modified.toDate();
     }
-
   } catch (error) {
     console.error(`Failed to get document ${documentId}:`, error);
   }
 }
 
-async function getData(
-  sources: JSONAPISource[],
-  params: JSONAPIParams[]
-) {
+async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
   const data: any = [];
 
   for (const source of sources) {
@@ -106,7 +102,7 @@ async function getData(
         console.error("Faield to upload logo: ", error);
       }
     }
-    
+
     const time = await getLastModified(source.name);
     for (const param of params) {
       try {
@@ -116,7 +112,7 @@ async function getData(
           if (time != -1) {
             _q = _q.filter({
               attribute: "modified_at",
-              op: "gt", 
+              op: "gt",
               value: time.toJSON().replace("T", " "),
             });
           }
@@ -129,17 +125,18 @@ async function getData(
         for (const element of result) {
           const ref = await param.func(element, source);
           const ids = extractID(element.relationships);
-          if (time != -1) {
-            if (element.attributes.image_url) {
-              const host = source.requestProcessor.urlBuilder.host;
-              const fullImageUrl = `${host}${element.attributes.image_url}`;
-              try {
-                const newImageUrl = await uploadImage(fullImageUrl, 'images/' + source.name + element.attributes.image_url);
-                element.attributes.image_url = newImageUrl;
-              } catch (error) {
-                console.error("Failed to upload image: ", error);
-                continue;
-              }
+          if (element.attributes.image_url) {
+            const host = source.requestProcessor.urlBuilder.host;
+            const fullImageUrl = `${host}${element.attributes.image_url}`;
+            try {
+              const newImageUrl = await uploadImage(
+                fullImageUrl,
+                "images/" + source.name + element.attributes.image_url
+              );
+              element.attributes.image_url = newImageUrl;
+            } catch (error) {
+              console.error("Failed to upload image: ", error);
+              continue;
             }
           }
           batch.set(ref, {
@@ -269,5 +266,3 @@ exports.queryVenues = functions
       },
     ]);
   });
-
-  
