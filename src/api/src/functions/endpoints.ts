@@ -246,6 +246,8 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   const purchase = db.collection("purchases").doc();
   const response = {
     id: purchase.path,
+    user_id: ticketResponse.attributes.user_id,
+    status: "reserved",
     ticket: {
       id: ticketResponse.id,
       ref: ticketDB.path,
@@ -274,7 +276,17 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   return response;
 });
 
-// TODO: ADD the data to firebase
+exports.getPurchases = onCall({ region: "europe-west1" }, async (request) => {
+  const querySnapshot = await base.db
+    .collection("purchases")
+    .where("user_id", "==", request.auth?.uid)
+    .where("status", "==", "bought")
+    .get();
+
+  console.log(querySnapshot.docs.map((e) => e.data()));
+});
+
+// TODauO: ADD the data to firebase
 // TODO: Purchases
 // TODO: Make sure salma gets the errors so she can display them.
 // TODO: Test for errors (full venue), disconnectedvendor, etc.
