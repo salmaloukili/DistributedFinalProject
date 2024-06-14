@@ -247,6 +247,8 @@ export default function EventDetails() {
 
   const addToCartHandler = async () => {
     try {
+      const reserve = getCallable('endpoints-reserve');
+
       const response = (
         await reserve({
           event: event,
@@ -255,7 +257,7 @@ export default function EventDetails() {
         })
       ).data;
       const packageItem = {
-        id: `${event.id}-${Date.now()}`,
+        id: response.id,
         event: event,
         seat: response.seat,
         transportation: selectedTransportation,
@@ -268,7 +270,6 @@ export default function EventDetails() {
       closeModal();
       setSnackbarMessage('Package added to cart successfully!');
       setSnackbarOpen(true);
-      const reserve = getCallable('endpoints-reserve');
     } catch (error) {
       console.error('Error reserving:', error);
     }

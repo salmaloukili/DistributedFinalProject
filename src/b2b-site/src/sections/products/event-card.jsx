@@ -124,5 +124,6 @@ EventCard.propTypes = {
     }).isRequired,
     venue_id: PropTypes.string.isRequired,
     max_price: PropTypes.number.isRequired,
+    price: PropTypes.number.isRequired,
   }).isRequired,
 };
