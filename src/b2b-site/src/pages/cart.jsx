@@ -5,6 +5,7 @@ import React, { useContext, useState } from 'react';
 import { Container, Box, Typography, Button, Snackbar } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import { CartContext } from 'src/context/CartContext';
+import { getCallable } from 'src/utils/firebase';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -22,6 +23,8 @@ export default function CartPage() {
   };
 
   const handleBuy = async () => {
+    const buyPackage = getCallable('endpoints-buyPackage');
+    await buyPackage(cart);
     await sendConfirmationEmail();
     clearCart();
     setSnackbarMessage('Purchase successful! Confirmation email sent.');
