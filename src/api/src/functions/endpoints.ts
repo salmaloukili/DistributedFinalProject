@@ -295,10 +295,77 @@ exports.getUserPackages = onCall(
       .where("user_id", "==", request.auth?.uid)
       .where("status", "==", "bought")
       .get();
-
-    console.log(querySnapshot.docs.map((e) => e.data()));
   }
 );
+
+exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
+  const success: String[] = [];
+  const errors: String[] = [];
+
+  for (const data of request.data) {
+    console.log(data);
+
+    const correctVenueVendor = sources.venues.find(
+      (v) => v.name === data.event.ref.split("/")[1]
+    );
+    const correctTransportVendor = sources.transport.find(
+      (v) => v.name === data.transportation.ref.split("/")[1]
+    );
+    const correctCateringVendor = sources.catering.find(
+      (v) => v.name === data.food.ref.split("/")[1]
+    );
+
+    // const querySnapshot = (await base.db
+    //   .collection("purchases")
+    //   .doc("").update({"":"", adsalkn:""});
+
+    try {
+      correctVenueVendor?.update((t) =>
+        t.updateRecord({
+          type: "Ticket",
+          id: data.ticket.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+
+      correctTransportVendor?.update((t) =>
+        t.updateRecord({
+          type: "Seat",
+          id: data.seat.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+
+      correctCateringVendor?.update((t) =>
+        t.updateRecord({
+          type: "Meal",
+          id: data.meal.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+      success.push(data.id);
+
+
+    } catch (error) {
+      console.error("Error purchasing:", error);
+      errors.push(String(error));
+    }
+  }
+  const a = {
+    result: {
+      valid: true,
+      message: errors,
+      ids: success,
+    }
+    }
+  console.log(a)
+});
 
 // TODauO: ADD the data to firebase
 // TODO: Purchases
