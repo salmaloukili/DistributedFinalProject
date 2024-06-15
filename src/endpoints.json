@@ -184,6 +184,10 @@
       "ids": ["success"]
     }
   },
+  "removePackageFromCart": {
+      "valid": true,
+      "errors": ["errors"]
+  },
   "getAllUsers": [
     {
       "uid": "5exEw4o8NEyIYOKY4ZbSGbYZGphp",
@@ -223,4 +227,5 @@
       "tenantId": null
     }
   ]
+  
 }

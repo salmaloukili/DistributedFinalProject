@@ -16,8 +16,10 @@ export default function CartPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const handleRemove = (id) => {
+  const handleRemove = async (id) => {
     removeFromCart(id);
+    const removePackageFromCart = getCallable('endpoints-removePackageFromCart');
+    await removePackageFromCart(id);
     setSnackbarMessage('Item removed from cart');
     setSnackbarOpen(true);
   };

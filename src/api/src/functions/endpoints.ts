@@ -2,6 +2,7 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
+import { QuerySnapshot } from "firebase-admin/firestore";
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -157,6 +158,8 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   let seatResponse: any;
   let mealResponse: any;
 
+  const errors = []
+
   try {
     ticketResponse = await correctVenueVendor.update((t: any) =>
       t.addRecord({
@@ -198,6 +201,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
     );
   } catch (error) {
     console.error("Error adding records:", error);
+    errors.push(error);
 
     // Rollback added records
     try {
@@ -205,6 +209,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
         t.removeRecord({ type: "Ticket", id: ticketResponse.id })
       );
     } catch (rollbackError) {
+      errors.push(rollbackError)
       console.error("Error rolling back record:", rollbackError);
     }
     try {
@@ -212,6 +217,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
         t.removeRecord({ type: "Meal", id: mealResponse.id })
       );
     } catch (rollbackError) {
+      errors.push(rollbackError);
       console.error("Error rolling back record:", rollbackError);
     }
     try {
@@ -219,13 +225,14 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
         t.removeRecord({ type: "Seat", id: seatResponse.id })
       );
     } catch (rollbackError) {
+      errors.push(rollbackError);
       console.error("Error rolling back record:", rollbackError);
     }
 
     return {
       result: {
         valid: false,
-        message: "asjnkdjsanksankas",
+        message: errors,
       },
     };
   }
@@ -295,7 +302,10 @@ exports.getUserPackages = onCall(
       .where("user_id", "==", request.auth?.uid)
       .where("status", "==", "bought")
       .get();
+
+    return querySnapshot;
   }
+  
 );
 
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
@@ -385,6 +395,99 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   return a
 });
 
+exports.removePackageFromCart = onCall(
+  { region: "europe-west1" },
+  async (request) => {
+    console.log(request.data);
+
+    const purchaseDoc = await base.db.doc(request.data).get();
+    const ticketRef = purchaseDoc.get("ticket").ref;
+    const seatRef = purchaseDoc.get("meal").ref;
+    const mealRef = purchaseDoc.get("seat").ref;
+
+    // Helper function to fetch vendor data
+    const fetchVendor = async (ref: any) => {
+      const id = ref.split("/")[1];
+      return await getRef("vendors").doc(id).get();
+    };
+
+    // Fetch all vendors
+    const [eventVendor, transportVendor, cateringVendor] = await Promise.all([
+      fetchVendor(ticketRef),
+      fetchVendor(seatRef),
+      fetchVendor(mealRef),
+    ]);
+    
+    // Validate vendors
+    const correctVenueVendor = sources.venues.find(
+      (v) => v.name === eventVendor.id
+    );
+    const correctTransportVendor = sources.transport.find(
+      (v) => v.name === transportVendor.id
+    );
+    const correctCateringVendor = sources.catering.find(
+      (v) => v.name === cateringVendor.id
+    );
+    
+
+    if (
+      !correctVenueVendor ||
+      !correctTransportVendor ||
+      !correctCateringVendor
+    ) {
+      const a = {
+        result: {
+          valid: false,
+          errors: "Error: One or more vendors are invalid.",
+        },
+      };
+      console.log(a)
+      return a;
+    }
+
+    const errors = []
+
+    try {
+      correctVenueVendor.update((t: any) =>
+        t.removeRecord({ type: "Ticket", id: ticketRef.split("/")[-1]})
+      );
+    } catch (rollbackError) {
+      errors.push(rollbackError);
+      console.error("Error removing ticket reservation:", rollbackError);
+    }
+
+    try {
+      correctTransportVendor.update((t: any) =>
+        t.removeRecord({ type: "Seat", id: seatRef.split("/")[-1] })
+      );
+    } catch (rollbackError) {
+      errors.push(rollbackError);
+      console.error("Error removing seat reservation:", rollbackError);
+    }
+
+    try {
+      correctCateringVendor.update((t: any) =>
+        t.removeRecord({ type: "Meal", id: mealRef.split("/")[-1] })
+      );
+    } catch (rollbackError) {
+      errors.push(rollbackError);
+      console.error("Error removing meal reservation:", rollbackError);
+    }
+
+    const removePurchase = await base.db.doc(request.data).delete();
+    const removeTicket = await base.db.doc(ticketRef).delete();
+    const removeSeat = await base.db.doc(seatRef).delete();
+    const removeMeal = await base.db.doc(mealRef).delete();
+
+    const response = {
+      valid: errors.length == 0? true: false,
+      errors: errors,
+    }
+    console.log("response")
+
+    return response
+  }
+);
 // TODauO: ADD the data to firebase
 // TODO: Purchases
 // TODO: Make sure salma gets the errors so she can display them.
