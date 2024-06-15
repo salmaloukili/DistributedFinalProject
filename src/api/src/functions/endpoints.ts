@@ -315,9 +315,28 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       (v) => v.name === data.food.ref.split("/")[1]
     );
 
-    // const querySnapshot = (await base.db
-    //   .collection("purchases")
-    //   .doc("").update({"":"", adsalkn:""});
+    console.log(data.event.ref)
+
+    await base.db
+      .collection("purchases")
+      .doc(data.id.split('/')[1])
+      .update({ status: "bought", "ticket.status":"bought", "meal.status": "bought", "seat.status": "bought" });
+    
+    await base.db.doc(data.ticket.ref)
+    .update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.meal.ref)
+    .update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.seat.ref)
+    .update({
+      status: "bought",
+    });
+
 
     try {
       correctVenueVendor?.update((t) =>
@@ -350,8 +369,6 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
         })
       );
       success.push(data.id);
-
-
     } catch (error) {
       console.error("Error purchasing:", error);
       errors.push(String(error));
@@ -362,9 +379,9 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       valid: true,
       message: errors,
       ids: success,
-    }
-    }
-  console.log(a)
+    },
+  };
+  console.log(a);
 });
 
 // TODauO: ADD the data to firebase
