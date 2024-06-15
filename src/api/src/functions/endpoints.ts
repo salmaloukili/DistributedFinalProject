@@ -309,7 +309,9 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
-  const data = request.data;
+  const data = request.data[0];
+
+  console.log(data)
 
   const correctVenueVendor = sources.venues.find(
     (v) => v.name === data.event.ref.split("/")[1]
@@ -323,7 +325,7 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
 
   await base.db.collection("purchases").doc(data.id).update({
     status: "bought",
-    "ticket.status": "bought",
+    "ticket.status": "bought", 
     "meal.status": "bought",
     "seat.status": "bought",
   });
