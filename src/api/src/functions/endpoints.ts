@@ -388,14 +388,12 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
 });
 
 exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
-  const purchaseDoc = (await base.db
-    .collection("purchases")
-    .doc(request.data.id)
-    .get()).data();
-  const ticketRef = purchaseDoc?.ticket.ref;
-  const seatRef = purchaseDoc?.seat.ref;
-  const mealRef = purchaseDoc?.meal.ref;
-
+  const purchaseDoc = (
+    await base.db.collection("purchases").doc(request.data.id).get()
+  ).data();
+  const ticketRef: string = purchaseDoc?.ticket.ref;
+  const seatRef: string = purchaseDoc?.seat.ref;
+  const mealRef: string = purchaseDoc?.meal.ref;
   // Helper function to fetch vendor data
   const fetchVendor = async (ref: any) => {
     const id = ref.split("/")[1];
@@ -438,8 +436,8 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
   const errors = [];
 
   try {
-    correctVenueVendor.update((t: any) =>
-      t.removeRecord({ type: "Ticket", id: ticketRef.split("/")[-1] })
+    correctVenueVendor.update((t) =>
+      t.removeRecord({ type: "Ticket", id: ticketRef.split("/").at(-1) })
     );
   } catch (rollbackError) {
     errors.push(rollbackError);
@@ -448,7 +446,7 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
 
   try {
     correctTransportVendor.update((t: any) =>
-      t.removeRecord({ type: "Seat", id: seatRef.split("/")[-1] })
+      t.removeRecord({ type: "Seat", id: seatRef.split("/").at(-1) })
     );
   } catch (rollbackError) {
     errors.push(rollbackError);
@@ -457,14 +455,14 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
 
   try {
     correctCateringVendor.update((t: any) =>
-      t.removeRecord({ type: "Meal", id: mealRef.split("/")[-1] })
+      t.removeRecord({ type: "Meal", id: mealRef.split("/").at(-1) })
     );
   } catch (rollbackError) {
     errors.push(rollbackError);
     console.error("Error removing meal reservation:", rollbackError);
   }
 
-  await base.db.doc(request.data).delete();
+  await base.db.collection("purchases").doc(request.data.id).delete();
   await base.db.doc(ticketRef).delete();
   await base.db.doc(seatRef).delete();
   await base.db.doc(mealRef).delete();
