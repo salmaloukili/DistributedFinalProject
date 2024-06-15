@@ -1,22 +1,36 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { getCallable, auth } from 'src/utils/firebase'; 
 import ImageComponent from 'src/components/firebase-image';
-import { mockTickets } from 'src/_mock/tickets';
 
 export default function NonAdminIndexPage() {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [tokenResult, setTokenResult] = useState(null);
 
   useEffect(() => {
-    // Fetch tickets or other data for the non-admin user
     const fetchTickets = async () => {
-      setTickets(mockTickets);
+      if (auth.currentUser) {
+        try {
+          const result = await auth.currentUser.getIdTokenResult(false);
+          setTokenResult(result);
+          const getUserPackages = getCallable('getUserPackages');
+          const response = await getUserPackages({ authToken: result.token });
+          if (response.data) {
+            setTickets(response.data);
+          } else {
+            console.error('Error fetching user packages:', response.data.error);
+          }
+        } catch (error) {
+          console.error('Error fetching user packages:', error);
+        }
+      }
     };
 
     fetchTickets();
@@ -39,19 +53,19 @@ export default function NonAdminIndexPage() {
       </Typography>
 
       <Grid container spacing={3}>
-        {tickets.map(ticket => (
+        {tickets.map((ticket) => (
           <Grid xs={12} sm={6} md={4} key={ticket.id}>
-            <Typography>{ticket.title}</Typography>
-            <ImageComponent filePath={ticket.imageName} />
-            <Typography variant="body2">Date: {ticket.date}</Typography>
-            <Typography variant="body2">Venue: {ticket.venue}</Typography>
-            <Typography variant="body2">Address: {ticket.venueLocation}</Typography>
-            <Typography variant="body2">Price: {ticket.price} EUR</Typography>
+            <Typography>{ticket.event.name}</Typography>
+            <ImageComponent filePath={ticket.event.image_url} />
+            <Typography variant="body2">Date: {new Date(ticket.event.date._seconds * 1000).toLocaleDateString()}</Typography>
+            <Typography variant="body2">Venue: {ticket.event.venue.name}</Typography>
+            <Typography variant="body2">Address: {ticket.event.venue.location}</Typography>
+            <Typography variant="body2">Price: {ticket.ticket.price} EUR</Typography>
             <Typography variant="body2">
               Transportation: {ticket.transportation.origin} - {ticket.transportation.price} EUR
             </Typography>
             <Typography variant="body2">
-              Food: {ticket.food.data.food} - {ticket.food.data.price} EUR
+              Food: {ticket.food.food} - {ticket.food.price} EUR
             </Typography>
             <Button variant="contained" sx={{ mt: 2 }} onClick={() => handleOpenModal(ticket)}>
               View Details
@@ -75,19 +89,19 @@ export default function NonAdminIndexPage() {
         >
           {selectedTicket && (
             <>
-              <Typography variant="h6">{selectedTicket.title}</Typography>
-              <Typography variant="body1">Date: {selectedTicket.date}</Typography>
-              <Typography variant="body1">Venue: {selectedTicket.venue}</Typography>
-              <Typography variant="body1">Address: {selectedTicket.venueLocation}</Typography>
-              <Typography variant="body1">Price: {selectedTicket.price} EUR</Typography>
+              <Typography variant="h6">{selectedTicket.event.name}</Typography>
+              <Typography variant="body1">Date: {new Date(selectedTicket.event.date._seconds * 1000).toLocaleDateString()}</Typography>
+              <Typography variant="body1">Venue: {selectedTicket.event.venue.name}</Typography>
+              <Typography variant="body1">Address: {selectedTicket.event.venue.location}</Typography>
+              <Typography variant="body1">Price: {selectedTicket.ticket.price} EUR</Typography>
               <Typography variant="body1">
                 Transportation: {selectedTicket.transportation.origin} - {selectedTicket.transportation.price} EUR
               </Typography>
               <Typography variant="body1">
-                Food: {selectedTicket.food.data.food} - {selectedTicket.food.data.price} EUR
+                Food: {selectedTicket.food.food} - {selectedTicket.food.price} EUR
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <ImageComponent filePath={selectedTicket.qrCode} />
+                <ImageComponent filePath={selectedTicket.ticket.qrCode} />
               </Box>
               <Button variant="contained" sx={{ mt: 2 }} onClick={handleCloseModal}>
                 Close

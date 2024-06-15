@@ -1,96 +1,103 @@
-
-
-
-import React, { useContext, useState } from 'react';
-import { Container, Box, Typography, Button, Snackbar } from '@mui/material';
-import MuiAlert from '@mui/material/Alert';
+import React, { useContext } from 'react';
 import { CartContext } from 'src/context/CartContext';
 import { getCallable } from 'src/utils/firebase';
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Box,
+  Button,
+  Stack,
+} from '@mui/material';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+export default function Cart() {
+  const { cart, setCart } = useContext(CartContext);
 
-export default function CartPage() {
-  const { cart, removeFromCart, clearCart, sendConfirmationEmail } = useContext(CartContext);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-
-  const handleRemove = (id) => {
-    removeFromCart(id);
-    setSnackbarMessage('Item removed from cart');
-    setSnackbarOpen(true);
-  };
-
-  const handleBuy = async () => {
-    const buyPackage = getCallable('endpoints-buyPackage');
-    await buyPackage(cart);
-    await sendConfirmationEmail();
-    clearCart();
-    setSnackbarMessage('Purchase successful! Confirmation email sent.');
-    setSnackbarOpen(true);
-  };
-
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
+  const handleRemovePackage = async (packageId) => {
+    try {
+      const removePackage = getCallable('endpoints-removePackage');
+      await removePackage({ packageId });
+      setCart(cart.filter((item) => item.id !== packageId));
+    } catch (error) {
+      console.error('Error removing package:', error);
     }
-    setSnackbarOpen(false);
+  };
+
+  const handleBuyPackage = async (packageItem) => {
+    try {
+      const buyPackage = getCallable('endpoints-buyPackage');
+      await buyPackage({ package: packageItem });
+      setCart(cart.filter((item) => item.id !== packageItem.id));
+    } catch (error) {
+      console.error('Error buying package:', error);
+    }
   };
 
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Shopping Cart
+        Your Cart
       </Typography>
       {cart.length === 0 ? (
-        <Typography variant="body1">Your cart is empty.</Typography>
+        <Typography variant="h6">Your cart is empty.</Typography>
       ) : (
-        <Box>
-          {cart.map((item) => (
-            <Box key={item.id} sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
-              <Typography variant="h6">{item.event.name}</Typography>
-              <Typography variant="body2">
-                Date:{' '}
-                {item.event.date
-                  ? new Date(item.event.date._seconds * 1000).toLocaleDateString('en-GB')
-                  : 'Date not available'}
-              </Typography>
-              <Typography variant="body2">Location: {item.event.venue_name}</Typography>
-              <Typography variant="body2">Address: {item.event.venue_location}</Typography>
-              <Typography variant="body2">Ticket: {item.event.max_price} EUR</Typography>
-              <Typography variant="body2">
-                Transportation: {item.transportation?.origin || 'N/A'} - {item.transportation?.price || 'N/A'} EUR
-              </Typography>
-              <Typography variant="body2">
-                Food: {item.food?.data?.food || 'N/A'} - {item.food?.data?.price || 'N/A'} EUR
-              </Typography>
-              <Typography variant="body2">Total: {item.total} EUR</Typography>
-              <Button
-                onClick={() => handleRemove(item.id)}
-                variant="contained"
-                color="secondary"
-                sx={{ mt: 1 }}
-              >
-                Remove
-              </Button>
-            </Box>
-          ))}
-          <Button onClick={handleBuy} variant="contained" color="primary" sx={{ mt: 2 }}>
-            Buy
-          </Button>
-        </Box>
+        cart.map((item) => (
+          <Card key={item.id} sx={{ mb: 2 }}>
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="h6">Event: {item.event.name}</Typography>
+                  <Typography variant="body1">
+                    Date: {new Date(item.event.date._seconds * 1000).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body1">Genre: {item.event.genre}</Typography>
+                  <Typography variant="body1">Venue: {item.event.venue.name}</Typography>
+                  <Typography variant="body1">Address: {item.event.venue.location}</Typography>
+                  <Typography variant="body1">Ticket Price: {item.event.price} EUR</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="h6">Transportation</Typography>
+                  <Typography variant="body1">Origin: {item.transportation.origin}</Typography>
+                  <Typography variant="body1">Price: {item.transportation.price} EUR</Typography>
+                  <Typography variant="body1">
+                    Departure Date: {new Date(item.transportation.departure_date._seconds * 1000).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="h6">Food</Typography>
+                  <Typography variant="body1">Food: {item.food.food}</Typography>
+                  <Typography variant="body1">Drink: {item.food.drink}</Typography>
+                  <Typography variant="body1">Description: {item.food.description}</Typography>
+                  <Typography variant="body1">Price: {item.food.price} EUR</Typography>
+                </Grid>
+              </Grid>
+              <Box mt={2}>
+                <Typography variant="h6">
+                  Total: {item.total} EUR
+                </Typography>
+                <Stack direction="row" spacing={2} mt={2}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleBuyPackage(item)}
+                  >
+                    Buy Package
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleRemovePackage(item.id)}
+                  >
+                    Remove Package
+                  </Button>
+                </Stack>
+              </Box>
+            </CardContent>
+          </Card>
+        ))
       )}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success">
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }
