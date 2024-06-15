@@ -2,7 +2,6 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
-import { QuerySnapshot } from "firebase-admin/firestore";
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -158,7 +157,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   let seatResponse: any;
   let mealResponse: any;
 
-  const errors = []
+  const errors = [];
 
   try {
     ticketResponse = await correctVenueVendor.update((t: any) =>
@@ -209,7 +208,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
         t.removeRecord({ type: "Ticket", id: ticketResponse.id })
       );
     } catch (rollbackError) {
-      errors.push(rollbackError)
+      errors.push(rollbackError);
       console.error("Error rolling back record:", rollbackError);
     }
     try {
@@ -263,7 +262,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   });
   const purchase = db.collection("purchases").doc();
   const response = {
-    id: purchase.path,
+    id: purchase.id,
     user_id: ticketResponse.attributes.user_id,
     status: "reserved",
     ticket: {
@@ -305,85 +304,78 @@ exports.getUserPackages = onCall(
 
     return querySnapshot;
   }
-  
 );
 
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
+  const data = request.data;
 
-  for (const data of request.data) {
-    console.log(data);
+  const correctVenueVendor = sources.venues.find(
+    (v) => v.name === data.event.ref.split("/")[1]
+  );
+  const correctTransportVendor = sources.transport.find(
+    (v) => v.name === data.transportation.ref.split("/")[1]
+  );
+  const correctCateringVendor = sources.catering.find(
+    (v) => v.name === data.food.ref.split("/")[1]
+  );
 
-    const correctVenueVendor = sources.venues.find(
-      (v) => v.name === data.event.ref.split("/")[1]
+  await base.db.collection("purchases").doc(data.id).update({
+    status: "bought",
+    "ticket.status": "bought",
+    "meal.status": "bought",
+    "seat.status": "bought",
+  });
+
+  await base.db.doc(data.ticket.ref).update({
+    status: "bought",
+  });
+
+  await base.db.doc(data.meal.ref).update({
+    status: "bought",
+  });
+
+  await base.db.doc(data.seat.ref).update({
+    status: "bought",
+  });
+
+  try {
+    correctVenueVendor?.update((t) =>
+      t.updateRecord({
+        type: "Ticket",
+        id: data.ticket.id,
+        attributes: {
+          status: "bought",
+        },
+      })
     );
-    const correctTransportVendor = sources.transport.find(
-      (v) => v.name === data.transportation.ref.split("/")[1]
+
+    correctTransportVendor?.update((t) =>
+      t.updateRecord({
+        type: "Seat",
+        id: data.seat.id,
+        attributes: {
+          status: "bought",
+        },
+      })
     );
-    const correctCateringVendor = sources.catering.find(
-      (v) => v.name === data.food.ref.split("/")[1]
+
+    correctCateringVendor?.update((t) =>
+      t.updateRecord({
+        type: "Meal",
+        id: data.meal.id,
+        attributes: {
+          status: "bought",
+        },
+      })
     );
-
-    console.log(data.event.ref)
-
-    await base.db
-      .collection("purchases")
-      .doc(data.id.split('/')[1])
-      .update({ status: "bought", "ticket.status":"bought", "meal.status": "bought", "seat.status": "bought" });
-    
-    await base.db.doc(data.ticket.ref)
-    .update({
-      status: "bought",
-    });
-
-    await base.db.doc(data.meal.ref)
-    .update({
-      status: "bought",
-    });
-
-    await base.db.doc(data.seat.ref)
-    .update({
-      status: "bought",
-    });
-
-
-    try {
-      correctVenueVendor?.update((t) =>
-        t.updateRecord({
-          type: "Ticket",
-          id: data.ticket.id,
-          attributes: {
-            status: "bought",
-          },
-        })
-      );
-
-      correctTransportVendor?.update((t) =>
-        t.updateRecord({
-          type: "Seat",
-          id: data.seat.id,
-          attributes: {
-            status: "bought",
-          },
-        })
-      );
-
-      correctCateringVendor?.update((t) =>
-        t.updateRecord({
-          type: "Meal",
-          id: data.meal.id,
-          attributes: {
-            status: "bought",
-          },
-        })
-      );
-      success.push(data.id);
-    } catch (error) {
-      console.error("Error purchasing:", error);
-      errors.push(String(error));
-    }
+    success.push(data.id);
+  } catch (error) {
+    console.error("Error purchasing:", error);
+    errors.push(String(error));
   }
+
   const a = {
     result: {
       valid: true,
@@ -392,102 +384,99 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
     },
   };
 
-  return a
+  return a;
 });
 
-exports.removePackageFromCart = onCall(
-  { region: "europe-west1" },
-  async (request) => {
-    console.log(request.data);
+exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
+  const purchaseDoc = (await base.db
+    .collection("purchases")
+    .doc(request.data.id)
+    .get()).data();
+  const ticketRef = purchaseDoc?.ticket.ref;
+  const seatRef = purchaseDoc?.seat.ref;
+  const mealRef = purchaseDoc?.meal.ref;
 
-    const purchaseDoc = await base.db.doc(request.data).get();
-    const ticketRef = purchaseDoc.get("ticket").ref;
-    const seatRef = purchaseDoc.get("meal").ref;
-    const mealRef = purchaseDoc.get("seat").ref;
+  // Helper function to fetch vendor data
+  const fetchVendor = async (ref: any) => {
+    const id = ref.split("/")[1];
+    return await getRef("vendors").doc(id).get();
+  };
 
-    // Helper function to fetch vendor data
-    const fetchVendor = async (ref: any) => {
-      const id = ref.split("/")[1];
-      return await getRef("vendors").doc(id).get();
+  // Fetch all vendors
+  const [eventVendor, transportVendor, cateringVendor] = await Promise.all([
+    fetchVendor(ticketRef),
+    fetchVendor(seatRef),
+    fetchVendor(mealRef),
+  ]);
+
+  // Validate vendors
+  const correctVenueVendor = sources.venues.find(
+    (v) => v.name === eventVendor.id
+  );
+  const correctTransportVendor = sources.transport.find(
+    (v) => v.name === transportVendor.id
+  );
+  const correctCateringVendor = sources.catering.find(
+    (v) => v.name === cateringVendor.id
+  );
+
+  if (
+    !correctVenueVendor ||
+    !correctTransportVendor ||
+    !correctCateringVendor
+  ) {
+    const a = {
+      result: {
+        valid: false,
+        errors: "Error: One or more vendors are invalid.",
+      },
     };
-
-    // Fetch all vendors
-    const [eventVendor, transportVendor, cateringVendor] = await Promise.all([
-      fetchVendor(ticketRef),
-      fetchVendor(seatRef),
-      fetchVendor(mealRef),
-    ]);
-    
-    // Validate vendors
-    const correctVenueVendor = sources.venues.find(
-      (v) => v.name === eventVendor.id
-    );
-    const correctTransportVendor = sources.transport.find(
-      (v) => v.name === transportVendor.id
-    );
-    const correctCateringVendor = sources.catering.find(
-      (v) => v.name === cateringVendor.id
-    );
-    
-
-    if (
-      !correctVenueVendor ||
-      !correctTransportVendor ||
-      !correctCateringVendor
-    ) {
-      const a = {
-        result: {
-          valid: false,
-          errors: "Error: One or more vendors are invalid.",
-        },
-      };
-      console.log(a)
-      return a;
-    }
-
-    const errors = []
-
-    try {
-      correctVenueVendor.update((t: any) =>
-        t.removeRecord({ type: "Ticket", id: ticketRef.split("/")[-1]})
-      );
-    } catch (rollbackError) {
-      errors.push(rollbackError);
-      console.error("Error removing ticket reservation:", rollbackError);
-    }
-
-    try {
-      correctTransportVendor.update((t: any) =>
-        t.removeRecord({ type: "Seat", id: seatRef.split("/")[-1] })
-      );
-    } catch (rollbackError) {
-      errors.push(rollbackError);
-      console.error("Error removing seat reservation:", rollbackError);
-    }
-
-    try {
-      correctCateringVendor.update((t: any) =>
-        t.removeRecord({ type: "Meal", id: mealRef.split("/")[-1] })
-      );
-    } catch (rollbackError) {
-      errors.push(rollbackError);
-      console.error("Error removing meal reservation:", rollbackError);
-    }
-
-    const removePurchase = await base.db.doc(request.data).delete();
-    const removeTicket = await base.db.doc(ticketRef).delete();
-    const removeSeat = await base.db.doc(seatRef).delete();
-    const removeMeal = await base.db.doc(mealRef).delete();
-
-    const response = {
-      valid: errors.length == 0? true: false,
-      errors: errors,
-    }
-    console.log("response")
-
-    return response
+    console.log(a);
+    return a;
   }
-);
+
+  const errors = [];
+
+  try {
+    correctVenueVendor.update((t: any) =>
+      t.removeRecord({ type: "Ticket", id: ticketRef.split("/")[-1] })
+    );
+  } catch (rollbackError) {
+    errors.push(rollbackError);
+    console.error("Error removing ticket reservation:", rollbackError);
+  }
+
+  try {
+    correctTransportVendor.update((t: any) =>
+      t.removeRecord({ type: "Seat", id: seatRef.split("/")[-1] })
+    );
+  } catch (rollbackError) {
+    errors.push(rollbackError);
+    console.error("Error removing seat reservation:", rollbackError);
+  }
+
+  try {
+    correctCateringVendor.update((t: any) =>
+      t.removeRecord({ type: "Meal", id: mealRef.split("/")[-1] })
+    );
+  } catch (rollbackError) {
+    errors.push(rollbackError);
+    console.error("Error removing meal reservation:", rollbackError);
+  }
+
+  await base.db.doc(request.data).delete();
+  await base.db.doc(ticketRef).delete();
+  await base.db.doc(seatRef).delete();
+  await base.db.doc(mealRef).delete();
+
+  const response = {
+    valid: errors.length == 0 ? true : false,
+    errors: errors,
+  };
+  console.log("response");
+
+  return response;
+});
 // TODauO: ADD the data to firebase
 // TODO: Purchases
 // TODO: Make sure salma gets the errors so she can display them.

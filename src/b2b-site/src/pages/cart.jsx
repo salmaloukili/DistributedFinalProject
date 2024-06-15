@@ -15,11 +15,11 @@ import {
 export default function Cart() {
   const { cart, setCart } = useContext(CartContext);
 
-  const handleRemovePackage = async (packageId) => {
+  const handleRemovePackage = async (packageItem) => {
     try {
       const removePackage = getCallable('endpoints-removePackage');
-      await removePackage({ packageId });
-      setCart(cart.filter((item) => item.id !== packageId));
+      await removePackage(packageItem);
+      setCart(cart.filter((item) => item.id !== packageItem.id));
     } catch (error) {
       console.error('Error removing package:', error);
     }
@@ -28,7 +28,7 @@ export default function Cart() {
   const handleBuyPackage = async (packageItem) => {
     try {
       const buyPackage = getCallable('endpoints-buyPackage');
-      await buyPackage({ package: packageItem });
+      await buyPackage(packageItem);
       setCart(cart.filter((item) => item.id !== packageItem.id));
     } catch (error) {
       console.error('Error buying package:', error);
@@ -88,7 +88,7 @@ export default function Cart() {
                   <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => handleRemovePackage(item.id)}
+                    onClick={() => handleRemovePackage(item)}
                   >
                     Remove Package
                   </Button>
