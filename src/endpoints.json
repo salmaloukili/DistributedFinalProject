@@ -180,7 +180,8 @@
   "buyPackage": {
     "result": {
       "valid": true,
-      "message": ""
+      "message": ["errors"], 
+      "ids": ["success"]
     }
   },
   "getAllUsers": [

@@ -279,7 +279,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
       message:
         ticketResponse.attributes.price === request.data.event.price
           ? "Success"
-          : "WARNING: Price changed.",
+          : `WARNING! Price changed from ${request.data.event.price} to ${ticketResponse.attributes.price}`,
     },
   };
   purchase.set(response);
@@ -381,7 +381,8 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       ids: success,
     },
   };
-  console.log(a);
+
+  return a
 });
 
 // TODauO: ADD the data to firebase
