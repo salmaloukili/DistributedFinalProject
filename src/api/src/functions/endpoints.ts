@@ -309,7 +309,8 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
-  const data = request.data[0];
+
+  for (const data of request.data){
 
   console.log(data)
 
@@ -377,6 +378,8 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
     console.error("Error purchasing:", error);
     errors.push(String(error));
   }
+
+}
 
   const a = {
     result: {
