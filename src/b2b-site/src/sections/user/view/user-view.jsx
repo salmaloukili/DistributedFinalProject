@@ -1,16 +1,19 @@
-import { useState } from 'react';
+
+
+
+import React, { useState, useEffect } from 'react';
+import { getCallable } from 'src/utils/firebase';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
-
-import { users } from 'src/_mock/user';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -22,20 +25,34 @@ import TableEmptyRows from '../table-empty-rows';
 import UserTableToolbar from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
-// ----------------------------------------------------------------------
-
 export default function UserPage() {
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
-  const [orderBy, setOrderBy] = useState('name');
-
+  const [orderBy, setOrderBy] = useState('displayName');
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const getAllUsers = getCallable('endpoints-getAllUsers');
+      try {
+        const response = await getAllUsers();
+        console.log('API Response:', response.data);
+        setUsers(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -47,7 +64,7 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = users.map((n) => n.name);
+      const newSelecteds = users.map((n) => n.email);
       setSelected(newSelecteds);
       return;
     }
@@ -98,10 +115,6 @@ export default function UserPage() {
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Users</Typography>
-
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
-          New User
-        </Button>
       </Stack>
 
       <Card>
@@ -122,28 +135,31 @@ export default function UserPage() {
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'displayName', label: 'Name' },
+                  { id: 'email', label: 'Email' },
+                  { id: 'customClaims.role', label: 'Role' },
+                  { id: 'emailVerified', label: 'Verified', align: 'center' },
+                  { id: 'metadata.creationTime', label: 'Creation Time' },
+                  { id: 'metadata.lastSignInTime', label: 'Last Sign In Time' },
                   { id: '' },
                 ]}
               />
               <TableBody>
-                {dataFiltered
+                {loading && <TableRow><TableCell colSpan={7}>Loading...</TableCell></TableRow>}
+                {error && <TableRow><TableCell colSpan={7}>Error loading data</TableCell></TableRow>}
+                {!loading && !error && dataFiltered
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
                     <UserTableRow
-                      key={row.id}
-                      name={row.name}
-                      role={row.role}
-                      status={row.status}
-                      company={row.company}
-                      avatarUrl={row.avatarUrl}
-                      isVerified={row.isVerified}
-                      selected={selected.indexOf(row.name) !== -1}
-                      handleClick={(event) => handleClick(event, row.name)}
+                      key={row.uid}
+                      name={row.displayName}
+                      email={row.email}
+                      role={row.customClaims?.role || 'N/A'}
+                      emailVerified={row.emailVerified ? 'Yes' : 'No'}
+                      creationTime={new Date(row.metadata.creationTime).toLocaleString()}
+                      lastSignInTime={new Date(row.metadata.lastSignInTime).toLocaleString()}
+                      selected={selected.indexOf(row.email) !== -1}
+                      handleClick={(event) => handleClick(event, row.email)}
                     />
                   ))}
 

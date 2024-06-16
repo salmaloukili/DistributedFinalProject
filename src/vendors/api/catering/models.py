@@ -8,9 +8,7 @@ class Menu(BaseModel):
     http_methods = ["get", "options"]
 
     id = db.Column(db.Integer, primary_key=True)
-    meals = db.relationship(
-        "Meal", back_populates="menu"
-    )
+    meals = db.relationship("Meal", back_populates="menu")
     limit = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
     food = FunctionDefault(db.String(100), default=fake.dish)
     description = FunctionDefault(db.String(500), default=fake.dish_description)
@@ -18,20 +16,16 @@ class Menu(BaseModel):
     price = FunctionDefault(
         db.DECIMAL(7, 2), default=lambda: round(random.uniform(20, 200), 2)
     )
-
-    @jsonapi_attr
-    def image_url(self):
-        return f"/catering/img/{self.id%15}"
-
+    image_url = FunctionDefault(
+        db.String(100), default=lambda: f"/catering/img/{random.randint(1, 15)}"
+    )
 
 
 class Meal(BaseModel):
     __tablename__ = "meals"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(
-        db.String(100), default=fake.uuid4, nullable=False, unique=True
-    )
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     menu_id = db.Column(db.Integer, db.ForeignKey("menus.id"), nullable=False)
     menu = db.relationship("Menu", back_populates="meals")
     meal_date = FunctionDefault(
@@ -47,7 +41,7 @@ class Meal(BaseModel):
     def _s_post(cls, *args, **kwargs):
         print(kwargs)
         menu: Menu = Menu.query.get(kwargs["menu_id"])
-        food_count = Meal.query.filter(Meal.menu==menu).count()
+        food_count = Meal.query.filter(Meal.menu == menu).count()
         if not menu or menu.limit < food_count:
             raise ValidationError("Food is out of stock.")
 
@@ -56,9 +50,9 @@ class Meal(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(2, 4)):
+    for _ in range(0, random.randint(5, 10)):
         menu = Menu()
-        for _ in range(0, random.randint(1, 10)):
+        for _ in range(0, random.randint(5, 10)):
             Meal(menu_id=menu.id)
     return "Success"
 

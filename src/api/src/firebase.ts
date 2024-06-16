@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 const db = admin.firestore();
+const auth = admin.auth();
 const storage = admin.storage();
 const menuRef = db.collection("menus");
 const mealRef = db.collection("meals");
@@ -16,6 +17,7 @@ const ticketRef = db.collection("tickets");
 
 const venueVendorRef = db.collection("venueVendors");
 const vendorRef = db.collection("vendors");
+
 function getRef(collection: string, ...args: string[]) {
   switch (collection) {
     case "venues":
@@ -67,6 +69,7 @@ function getRef(collection: string, ...args: string[]) {
 
 export {
   db,
+  auth,
   storage,
   menuRef,
   mealRef,

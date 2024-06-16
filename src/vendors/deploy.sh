@@ -10,20 +10,20 @@ RESOURCE_GROUP="DistributedFinal"
 VENDOR="euDistVendor"
 
 
-# for i in {1..5}; do
-#     az webapp create --resource-group $RESOURCE_GROUP --plan euServicePlan --name $VENDOR-$i --container-image-name distimgs.azurecr.io/flask-api:latest
-#     az webapp config appsettings set --resource-group $RESOURCE_GROUP --name $VENDOR-$i --settings VENDOR_NUMBER=$i
+for i in {1..5}; do
+    az webapp create --resource-group $RESOURCE_GROUP --plan euServicePlan --name $VENDOR-$i --container-image-name distimgs.azurecr.io/flask-api:latest
+    az webapp config appsettings set --resource-group $RESOURCE_GROUP --name $VENDOR-$i --settings VENDOR_NUMBER=$i
 
-#     id=$(az identity show --resource-group $RESOURCE_GROUP --name distID --query id --output tsv)
-#     az webapp identity assign --resource-group $RESOURCE_GROUP --name $VENDOR-$i --identities $id
+    id=$(az identity show --resource-group $RESOURCE_GROUP --name distID --query id --output tsv)
+    az webapp identity assign --resource-group $RESOURCE_GROUP --name $VENDOR-$i --identities $id
     
-#     appConfig=$(az webapp config show --resource-group $RESOURCE_GROUP --name $VENDOR-$i --query id --output tsv)
-#     az resource update --ids $appConfig --set properties.acrUseManagedIdentityCreds=True
+    appConfig=$(az webapp config show --resource-group $RESOURCE_GROUP --name $VENDOR-$i --query id --output tsv)
+    az resource update --ids $appConfig --set properties.acrUseManagedIdentityCreds=True
 
-#     clientId=$(az identity show --resource-group $RESOURCE_GROUP --name distID --query clientId --output tsv)
-#     az resource update --ids $appConfig --set properties.AcrUserManagedIdentityID=$clientId
+    clientId=$(az identity show --resource-group $RESOURCE_GROUP --name distID --query clientId --output tsv)
+    az resource update --ids $appConfig --set properties.AcrUserManagedIdentityID=$clientId
 
-# done
+done
 
 VENDOR="asDistVendor"
 

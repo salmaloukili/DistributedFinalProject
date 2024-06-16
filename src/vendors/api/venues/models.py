@@ -28,7 +28,10 @@ class Event(BaseModel):
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
     genre = FunctionDefault(db.String(100), default=fake.music_genre)
     date = FunctionDefault(
-        db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
+        db.Date, default=lambda: fake.date_between(start_date="now", end_date="+2m")
+    )
+    image_url = FunctionDefault(
+        db.String(100), default=lambda: f"/venues/img/{random.randint(1, 15)}"
     )
 
     @jsonapi_attr
@@ -39,16 +42,11 @@ class Event(BaseModel):
 
         return price
 
-    @jsonapi_attr
-    def image_url(self):
-        return f"/venues/img/{self.id%15}"
 
 class Ticket(BaseModel):
     __tablename__ = "tickets"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(
-        db.String(100), default=fake.uuid4, nullable=False, unique=True
-    )
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
     event = db.relationship("Event", back_populates="tickets")
     price = FunctionDefault(
@@ -81,11 +79,11 @@ class Ticket(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(1, 3)):
+    for _ in range(0, random.randint(5, 7)):
         venue = Venue()
-        for _ in range(0, random.randint(2, 4)):
+        for _ in range(0, random.randint(10, 11)):
             event = Event(venue_id=venue.id)
-            for _ in range(0, random.randint(0, round(venue.capacity / 4))):
+            for _ in range(0, random.randint(5, 20)):
                 Ticket(event_id=event.id)
     return "Success"
 

@@ -1,7 +1,7 @@
 import random
 from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
-
+from datetime import date, timedelta
 
 class Bus(BaseModel):
     __tablename__ = "buss"
@@ -10,10 +10,9 @@ class Bus(BaseModel):
     model = FunctionDefault(db.String(100), default=fake.vehicle_year_make_model)
     capacity = FunctionDefault(db.Integer, default=lambda: random.randint(30, 60))
     schedules = db.relationship("Schedule", back_populates="bus")
-
-    @jsonapi_attr
-    def image_url(self):
-        return f"/transport/img/{self.id%15}"
+    image_url = FunctionDefault(
+        db.String(100), default=lambda: f"/transport/img/{random.randint(1, 15)}"
+    )
 
 
 class Schedule(BaseModel):
@@ -37,7 +36,7 @@ class Schedule(BaseModel):
 class Seat(BaseModel):
     __tablename__ = "seats"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False, unique=True)
+    user_id = FunctionDefault(db.String(100), default=fake.uuid4, nullable=False)
     schedule_id = db.Column(db.Integer, db.ForeignKey("schedules.id"), nullable=False)
     schedule = db.relationship("Schedule", back_populates="seats")
     sold_date = FunctionDefault(
@@ -65,12 +64,10 @@ class Seat(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(1, 3)):
+    for _ in range(0, random.randint(2, 4)):
         bus = Bus()
-        for _ in range(0, random.randint(2, 4)):
-            schedule = Schedule(bus_id=bus.id)
-            for _ in range(0, random.randint(0, round(bus.capacity / 4))):
-                Seat(schedule_id=schedule.id)
+        for day in range(0, 60):
+            schedule = Schedule(bus_id=bus.id, departure_date=date(2024, 6, 16) + timedelta(day))
     return "Success"
 
 
