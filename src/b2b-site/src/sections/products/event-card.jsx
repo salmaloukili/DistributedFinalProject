@@ -65,7 +65,7 @@ export default function EventCard({ event }) {
         ? new Date(event.date._seconds * 1000).toLocaleDateString('en-GB')
         : 'Date not available'}
       <br />
-      {`Price: ${event.max_price} EUR`}
+      {`Price: ${event.price} EUR`}
     </Typography>
   );
 

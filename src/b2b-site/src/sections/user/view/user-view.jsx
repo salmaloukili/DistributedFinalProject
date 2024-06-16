@@ -173,8 +173,8 @@
 // }
 
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { functions, httpsCallable } from 'src/utils/firebase'; // Corrected import path
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -185,8 +185,8 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';        // Importing TableRow
-import TableCell from '@mui/material/TableCell';      // Importing TableCell
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -212,15 +212,21 @@ export default function UserPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/getAllUsers')
-      .then(response => {
+    const fetchUsers = async () => {
+      const getAllUsers = httpsCallable(functions, 'getAllUsers');
+      try {
+        const response = await getAllUsers();
+        console.log('API Response:', response.data);
         setUsers(response.data);
         setLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
+        console.error('Error fetching users:', error);
         setError(error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   const handleSort = (event, id) => {
