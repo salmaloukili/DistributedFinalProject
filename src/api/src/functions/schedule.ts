@@ -85,11 +85,11 @@ async function getLastModified(documentId: string) {
 async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
   const data: any = [];
 
-  for (const source of sources) {
+  for (const source of (await sources)) {
     const vendorRef = getRef("vendors").doc(source.name);
     const vendorDoc = await vendorRef.get();
     const vendorData = vendorDoc.data();
-    if (!vendorData.logo_url) {
+    if (!vendorData?.logo_url) {
       try {
         const logoUrl = `vendor_logos/${source.name}`;
         const host = source.requestProcessor.urlBuilder.host;
@@ -155,10 +155,6 @@ async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
   }
   return data;
 }
-
-exports.test = functions.https.onRequest((req, res) => {
-  res.json(JSON.parse(process.env.VENDORS));
-});
 
 exports.queryTransport = functions
   .region("europe-west1")

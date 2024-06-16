@@ -130,13 +130,13 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   ]);
 
   // Validate vendors
-  const correctVenueVendor = sources.venues.find(
+  const correctVenueVendor = (await sources.venues).find(
     (v) => v.name === eventVendor.id
   );
-  const correctTransportVendor = sources.transport.find(
+  const correctTransportVendor = (await sources.transport).find(
     (v) => v.name === transportVendor.id
   );
-  const correctCateringVendor = sources.catering.find(
+  const correctCateringVendor = (await sources.catering).find(
     (v) => v.name === cateringVendor.id
   );
 
@@ -316,13 +316,13 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   for (const data of request.data) {
     console.log(data);
 
-    const correctVenueVendor = sources.venues.find(
+    const correctVenueVendor = (await sources.venues).find(
       (v) => v.name === data.event.ref.split("/")[1]
     );
-    const correctTransportVendor = sources.transport.find(
+    const correctTransportVendor = (await sources.transport).find(
       (v) => v.name === data.transportation.ref.split("/")[1]
     );
-    const correctCateringVendor = sources.catering.find(
+    const correctCateringVendor = (await sources.catering).find(
       (v) => v.name === data.food.ref.split("/")[1]
     );
 
@@ -334,7 +334,7 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
     });
 
     try {
-      correctVenueVendor?.update((t) =>
+      correctVenueVendor?.update((t: any) =>
         t.updateRecord({
           type: "Ticket",
           id: data.ticket.id,
@@ -344,7 +344,7 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
         })
       );
 
-      correctTransportVendor?.update((t) =>
+      correctTransportVendor?.update((t: any) =>
         t.updateRecord({
           type: "Seat",
           id: data.seat.id,
@@ -354,7 +354,7 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
         })
       );
 
-      correctCateringVendor?.update((t) =>
+      correctCateringVendor?.update((t: any) =>
         t.updateRecord({
           type: "Meal",
           id: data.meal.id,
@@ -421,13 +421,13 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
   ]);
 
   // Validate vendors
-  const correctVenueVendor = sources.venues.find(
+  const correctVenueVendor = (await sources.venues).find(
     (v) => v.name === eventVendor.id
   );
-  const correctTransportVendor = sources.transport.find(
+  const correctTransportVendor = (await sources.transport).find(
     (v) => v.name === transportVendor.id
   );
-  const correctCateringVendor = sources.catering.find(
+  const correctCateringVendor = (await sources.catering).find(
     (v) => v.name === cateringVendor.id
   );
 
@@ -452,7 +452,7 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
   const errors = [];
 
   try {
-    correctVenueVendor.update((t) =>
+    correctVenueVendor.update((t: any) =>
       t.removeRecord({ type: "Ticket", id: ticketRef.split("/").at(-1) })
     );
   } catch (rollbackError) {
