@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { getCallable } from 'src/utils/firebase';
 
@@ -151,7 +154,7 @@ export default function UserPage() {
                       key={row.uid}
                       name={row.displayName}
                       email={row.email}
-                      role={row.customClaims?.role}
+                      role={row.customClaims?.role || 'N/A'}
                       emailVerified={row.emailVerified ? 'Yes' : 'No'}
                       creationTime={new Date(row.metadata.creationTime).toLocaleString()}
                       lastSignInTime={new Date(row.metadata.lastSignInTime).toLocaleString()}

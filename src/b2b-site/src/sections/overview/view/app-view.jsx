@@ -1,4 +1,9 @@
-import React, { useEffect, useState } from 'react';
+
+
+
+
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
@@ -9,30 +14,22 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { getCallable } from 'src/utils/firebase';
-
+import { getCallable, auth } from 'src/utils/firebase';
+import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 import AppWidgetSummary from '../app-widget-summary';
 
-function PackagePurchaseDetails() {
-  const [packages, setPackages] = useState([]);
+function PackagePurchaseDetails({ packages, users }) {
+  const getTotalPrice = (pkg) => {
+    const eventPrice = pkg?.others?.event?.price || 0;
+    const transportPrice = pkg?.others?.transportation?.price || 0;
+    const foodPrice = pkg?.others?.food?.price || 0;
+    return parseFloat(eventPrice) + parseFloat(transportPrice) + parseFloat(foodPrice);
+  };
 
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const getAllPackages = getCallable('endpoints-getAllPackages');
-        const response = await getAllPackages();
-        if (response.data) {
-          setPackages(response.data);
-        } else {
-          console.error('Error fetching packages:', response.data.error);
-        }
-      } catch (error) {
-        console.error('Error fetching packages:', error);
-      }
-    };
-
-    fetchPackages();
-  }, []);
+  const getUserName = (userId) => {
+    const user = users.find((user) => user.uid === userId);
+    return user ? user.displayName : userId;
+  };
 
   return (
     <Card>
@@ -43,8 +40,8 @@ function PackagePurchaseDetails() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Package</TableCell>
+              <TableCell>User</TableCell>
+              <TableCell>Event</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Amount</TableCell>
             </TableRow>
@@ -52,10 +49,14 @@ function PackagePurchaseDetails() {
           <TableBody>
             {packages.map((pkg) => (
               <TableRow key={pkg.id}>
-                <TableCell>{pkg.name}</TableCell>
-                <TableCell>{pkg.package}</TableCell>
-                <TableCell>{new Date(pkg.date._seconds * 1000).toLocaleDateString()}</TableCell>
-                <TableCell>{pkg.amount}</TableCell>
+                <TableCell>{getUserName(pkg.user_id)}</TableCell>
+                <TableCell>{pkg.others?.event?.name || 'N/A'}</TableCell>
+                <TableCell>
+                  {pkg.ticket?.created_at?._seconds
+                    ? new Date(pkg.ticket.created_at._seconds * 1000).toLocaleDateString()
+                    : 'N/A'}
+                </TableCell>
+                <TableCell>{getTotalPrice(pkg).toFixed(2)} EUR</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -65,10 +66,35 @@ function PackagePurchaseDetails() {
   );
 }
 
+PackagePurchaseDetails.propTypes = {
+  packages: PropTypes.arrayOf(PropTypes.object).isRequired,
+  users: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
 export default function AppView() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [monthlySales, setMonthlySales] = useState(0);
   const [packagesSold, setPackagesSold] = useState(0);
+  const [packages, setPackages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+
+  useLayoutEffect(() => {
+    const getUsers = async () => {
+      onAuthStateChanged(auth, async (_user) => {
+        if (_user) {
+          const tokenResult = await getIdTokenResult(_user);
+          setUser(_user);
+          setRole(tokenResult.claims.role || 'user');
+        } else {
+          setUser(null);
+          setRole(null);
+        }
+      });
+    };
+    getUsers();
+  }, []);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -80,14 +106,20 @@ export default function AppView() {
 
         if (userResponse.data) {
           setTotalUsers(userResponse.data.length);
+          setUsers(userResponse.data);
         } else {
           console.error('Error fetching users:', userResponse.data.error);
         }
 
         if (packageResponse.data) {
+          setPackages(packageResponse.data);
           setPackagesSold(packageResponse.data.length);
-          // Assuming you have a `price` field in each package for calculating sales
-          const totalSales = packageResponse.data.reduce((total, pkg) => total + parseFloat(pkg.amount || 0), 0);
+          const totalSales = packageResponse.data.reduce((total, pkg) => {
+            const eventPrice = pkg?.others?.event?.price || 0;
+            const transportPrice = pkg?.others?.transportation?.price || 0;
+            const foodPrice = pkg?.others?.food?.price || 0;
+            return total + (parseFloat(eventPrice) + parseFloat(transportPrice) + parseFloat(foodPrice));
+          }, 0);
           setMonthlySales(totalSales);
         } else {
           console.error('Error fetching packages:', packageResponse.data.error);
@@ -96,7 +128,6 @@ export default function AppView() {
         console.error('Error fetching metrics:', error);
       }
     };
-
     fetchMetrics();
   }, []);
 
@@ -110,7 +141,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Total Users"
-            total={totalUsers}
+            total={totalUsers} 
             color="info"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
           />
@@ -119,7 +150,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Monthly Sales"
-            total={monthlySales}
+            total={parseFloat(monthlySales.toFixed(2))} 
             color="success"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
@@ -128,14 +159,14 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Packages Sold"
-            total={packagesSold}
+            total={packagesSold} 
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
           />
         </Grid>
 
         <Grid xs={12}>
-          <PackagePurchaseDetails />
+          <PackagePurchaseDetails packages={packages} users={users} />
         </Grid>
       </Grid>
     </Container>
