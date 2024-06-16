@@ -394,14 +394,20 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
 });
 
 exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
-  const purchaseDoc = (
-    await base.db.collection("purchases").doc(request.data.id).get()
-  ).data();
-  const ticketRef: string = purchaseDoc?.ticket.ref;
-  const seatRef: string = purchaseDoc?.seat.ref;
-  const mealRef: string = purchaseDoc?.meal.ref;
+  
+  console.log(request.data)
+  const purchaseDoc = ((await base.db.collection("purchases").doc(request.data.id).get())).data();
+  //Handle error if the ref doesn't exist
+
+  const ticketRef = purchaseDoc?.ticket.ref;
+  const seatRef = purchaseDoc?.seat.ref;
+  const mealRef = purchaseDoc?.meal.ref;
+  console.log(ticketRef)
+  console.log(seatRef)
+  console.log(mealRef)
   // Helper function to fetch vendor data
   const fetchVendor = async (ref: any) => {
+    console.log(ref)
     const id = ref.split("/")[1];
     return await getRef("vendors").doc(id).get();
   };
@@ -436,8 +442,11 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
       },
     };
     console.log(a);
-    return a;
-  }
+    return {
+        valid: false,
+        errors: "Error: One or more vendors are invalid.",
+      }
+  } 
 
   const errors = [];
 

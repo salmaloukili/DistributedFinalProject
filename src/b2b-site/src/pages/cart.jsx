@@ -27,7 +27,7 @@ export default function Cart() {
   const handleRemovePackage = async (packageItem) => {
     try {
       const removePackage = getCallable('endpoints-removePackage');
-      const response = await removePackage({ id: packageItem.id }).data;
+      const response = (await removePackage({ id: packageItem.id })).data;
 
       console.log('Remove Package Response:', response);
 
@@ -43,7 +43,7 @@ export default function Cart() {
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Error removing package:', error);
+      console.log('Error removing package:', error);
       setSnackbarMessage('Error removing package, refresh and try again');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -53,7 +53,7 @@ export default function Cart() {
   const handleBuyPackages = async () => {
     try {
       const buyPackage = getCallable('endpoints-buyPackage');
-      const response = await buyPackage({ data: cart }).data;
+      const response = (await buyPackage({ data: cart })).data;
       console.log('Cart', cart);
       console.log('Buy Package Response:', response);
 
