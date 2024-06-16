@@ -53,7 +53,7 @@ export default function Cart() {
   const handleBuyPackages = async () => {
     try {
       const buyPackage = getCallable('endpoints-buyPackage');
-      const response = (await buyPackage({ data: cart })).data;
+      const response = (await buyPackage(cart)).data;
       console.log('Cart', cart);
       console.log('Buy Package Response:', response);
 
@@ -64,7 +64,7 @@ export default function Cart() {
         return;
       }
 
-      setCart(cart.filter(item => !response.result.ids.includes(item.id)));
+      setCart(cart.filter((item) => !response.result.ids.includes(item.id)));
       setSnackbarMessage('All packages bought successfully!');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
@@ -88,7 +88,7 @@ export default function Cart() {
       const now = Date.now();
       const updatedTimers = {};
 
-      cart.forEach(item => {
+      cart.forEach((item) => {
         const timeLeft = item.expiry - now;
         updatedTimers[item.id] = timeLeft > 0 ? timeLeft : 0;
       });
@@ -127,7 +127,10 @@ export default function Cart() {
                     <Typography variant="body1">Origin: {item.transportation.origin}</Typography>
                     <Typography variant="body1">Price: {item.transportation.price} EUR</Typography>
                     <Typography variant="body1">
-                      Departure Date: {new Date(item.transportation.departure_date._seconds * 1000).toLocaleDateString()}
+                      Departure Date:{' '}
+                      {new Date(
+                        item.transportation.departure_date._seconds * 1000
+                      ).toLocaleDateString()}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={4}>
@@ -139,11 +142,14 @@ export default function Cart() {
                   </Grid>
                 </Grid>
                 <Box mt={2}>
-                  <Typography variant="h6">
-                    Total: {item.total} EUR
-                  </Typography>
+                  <Typography variant="h6">Total: {item.total} EUR</Typography>
                   <Typography variant="body1" color="error">
-                    This package is reserved for you for 7 minutes. Time left: {timers[item.id] ? `${Math.floor(timers[item.id] / 60000)}m ${Math.floor((timers[item.id] % 60000) / 1000)}s` : 'Expired'}
+                    This package is reserved for you for 7 minutes. Time left:{' '}
+                    {timers[item.id]
+                      ? `${Math.floor(timers[item.id] / 60000)}m ${Math.floor(
+                          (timers[item.id] % 60000) / 1000
+                        )}s`
+                      : 'Expired'}
                   </Typography>
                   <Button
                     variant="contained"
@@ -158,11 +164,7 @@ export default function Cart() {
             </Card>
           ))}
           <Stack direction="row" spacing={2} mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleBuyPackages}
-            >
+            <Button variant="contained" color="primary" onClick={handleBuyPackages}>
               Buy All Packages
             </Button>
           </Stack>

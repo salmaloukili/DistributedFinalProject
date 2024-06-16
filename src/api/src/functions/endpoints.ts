@@ -3,10 +3,6 @@ import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
 
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const cors = require("cors")({ origin: true });
-
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db.collectionGroup("events").get();
@@ -396,7 +392,6 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
 });
 
 exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
-  console.log(request.data);
   const purchaseDoc = (
     await base.db.collection("purchases").doc(request.data.id).get()
   ).data();
