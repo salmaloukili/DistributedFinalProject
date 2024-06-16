@@ -388,7 +388,7 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       ids: success,
     },
   };
-
+ 
   return a;
 });
 

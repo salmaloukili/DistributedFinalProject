@@ -184,7 +184,7 @@
       "ids": ["success"]
     }
   },
-  "removePackageFromCart": {
+  "removePackage": {
       "valid": true,
       "errors": ["errors"]
   },
