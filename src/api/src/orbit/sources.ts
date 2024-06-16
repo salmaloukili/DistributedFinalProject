@@ -67,7 +67,7 @@ export default {
     .get()
     .then((r) =>
       r.docs.map((d) =>
-        buildJSONSource({ id: d.id, ...d.data() }, transportVendor, "venues")
+        buildJSONSource({ id: d.id, ...d.data() }, transportVendor, "transport")
       )
     ),
   catering: vendorRef
@@ -75,7 +75,7 @@ export default {
     .get()
     .then((r) =>
       r.docs.map((d) =>
-        buildJSONSource({ id: d.id, ...d.data() }, caterVendor, "venues")
+        buildJSONSource({ id: d.id, ...d.data() }, caterVendor, "catering")
       )
     ),
 };

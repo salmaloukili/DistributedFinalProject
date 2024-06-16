@@ -85,7 +85,7 @@ async function getLastModified(documentId: string) {
 async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
   const data: any = [];
 
-  for (const source of (await sources)) {
+  for (const source of await sources) {
     const vendorRef = getRef("vendors").doc(source.name);
     const vendorDoc = await vendorRef.get();
     const vendorData = vendorDoc.data();
@@ -147,13 +147,12 @@ async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
 
         await updateLastModified(source.name);
         await batch.commit();
-        data.push(result);
       } catch (error) {
+        console.log(error);
         continue;
       }
     }
   }
-  return data;
 }
 
 exports.queryTransport = functions
@@ -163,7 +162,7 @@ exports.queryTransport = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    const data = await getData(sources.transport, [
+    await getData(sources.transport, [
       {
         obj: "Bus",
         include: ["schedules"],
@@ -205,7 +204,7 @@ exports.queryCatering = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    const data = await getData(sources.catering, [
+    await getData(sources.catering, [
       {
         obj: "Menu",
         include: ["meals"],
@@ -228,7 +227,7 @@ exports.queryVenues = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    const data = await getData(sources.venues, [
+    await getData(sources.venues, [
       {
         obj: "Venue",
         include: ["events"],

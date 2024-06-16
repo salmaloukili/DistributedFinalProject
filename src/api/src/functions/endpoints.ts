@@ -2,7 +2,7 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
-
+import { Timestamp } from "firebase-admin/firestore";
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db.collectionGroup("events").get();
@@ -10,7 +10,7 @@ exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
     .collection("vendors")
     .where("type", "==", "Venue")
     .get();
-  const venues = await base.db.collectionGroup("venues").get();
+  const venues = await base.db.collectionGroup("venues").limit(20).get();
 
   const data = querySnapshot.docs.map((doc) => {
     return {
@@ -34,7 +34,11 @@ exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
 exports.getTransportation = onCall(
   { region: "europe-west1" },
   async (request) => {
-    const querySnapshot = await base.db.collectionGroup("schedules").get();
+    const eventDate = new Timestamp(request.data.date._seconds, 0);
+    const querySnapshot = await base.db
+      .collectionGroup("schedules")
+      .where("departure_date", "==", eventDate.toDate())
+      .get();
     const buses = await base.db.collectionGroup("buses").get();
     const vendors = await base.db
       .collection("vendors")
@@ -63,7 +67,7 @@ exports.getTransportation = onCall(
 );
 
 exports.getFood = onCall({ region: "europe-west1" }, async (request) => {
-  const querySnapshot = await base.db.collectionGroup("menus").get();
+  const querySnapshot = await base.db.collectionGroup("menus").limit(10).get();
   const vendors = await base.db
     .collection("vendors")
     .where("type", "==", "Catering")
