@@ -280,6 +280,7 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
       ref: seatDB.path,
       ...seatResponse.attributes,
     },
+    others: request.data,
     result: {
       valid: true,
       message:
