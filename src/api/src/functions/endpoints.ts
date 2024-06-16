@@ -309,6 +309,7 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
+  console.log(request.data)
 
   for (const data of request.data){
 
