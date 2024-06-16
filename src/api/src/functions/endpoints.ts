@@ -309,6 +309,7 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
+  let valid = true;
   console.log(request.data);
 
   for (const data of request.data) {
@@ -329,18 +330,6 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       "ticket.status": "bought",
       "meal.status": "bought",
       "seat.status": "bought",
-    });
-
-    await base.db.doc(data.ticket.ref).update({
-      status: "bought",
-    });
-
-    await base.db.doc(data.meal.ref).update({
-      status: "bought",
-    });
-
-    await base.db.doc(data.seat.ref).update({
-      status: "bought",
     });
 
     try {
@@ -377,12 +366,25 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
     } catch (error) {
       console.error("Error purchasing:", error);
       errors.push(String(error));
+      valid = false;
+      continue;
     }
+    await base.db.doc(data.ticket.ref).update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.meal.ref).update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.seat.ref).update({
+      status: "bought",
+    });
   }
 
   const a = {
     result: {
-      valid: true,
+      valid: valid,
       message: errors,
       ids: success,
     },
