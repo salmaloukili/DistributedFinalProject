@@ -3,13 +3,9 @@ import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
 
-
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const cors = require("cors")({ origin: true });
-
-
-
 
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
@@ -301,124 +297,92 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   return response;
 });
 
-// exports.getUserPackages = onCall(
-//   { region: "europe-west1" },
-//   async (request) => {
-//     const querySnapshot = await base.db
-//       .collection("purchases")
-//       .where("user_id", "==", request.auth?.uid)
-//       .where("status", "==", "bought")
-//       .get();
+exports.getUserPackages = onCall(
+  { region: "europe-west1" },
+  async (request) => {
+    const querySnapshot = await base.db
+      .collection("purchases")
+      .where("user_id", "==", request.auth?.uid)
+      .where("status", "==", "bought")
+      .get();
 
-//     return querySnapshot;
-//   }
-// );
-
-
-
-exports.getUserPackages = functions
-  .region("europe-west1")
-  .https.onCall((data, context) => {
-    return new Promise((resolve, reject) => {
-      cors(data, context, async () => {
-        if (!context.auth) {
-          reject({ message: "Authentication required" });
-          return;
-        }
-
-        try {
-          const querySnapshot = await base
-            .collection("purchases")
-            .where("user_id", "==", context.auth.uid)
-            .where("status", "==", "bought")
-            .get();
-
-          const packages = querySnapshot.docs.map((doc) => doc.data());
-          resolve({ data: packages });
-        } catch (error) {
-          reject({ message: error.message });
-        }
-      });
-    });
-  });
-
-
+    return querySnapshot.docs.map((e) => e.data());
+  }
+);
 
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];
   const errors: String[] = [];
-  console.log(request.data)
+  console.log(request.data);
 
-  for (const data of request.data){
+  for (const data of request.data) {
+    console.log(data);
 
-  console.log(data)
-
-  const correctVenueVendor = sources.venues.find(
-    (v) => v.name === data.event.ref.split("/")[1]
-  );
-  const correctTransportVendor = sources.transport.find(
-    (v) => v.name === data.transportation.ref.split("/")[1]
-  );
-  const correctCateringVendor = sources.catering.find(
-    (v) => v.name === data.food.ref.split("/")[1]
-  );
-
-  await base.db.collection("purchases").doc(data.id).update({
-    status: "bought",
-    "ticket.status": "bought", 
-    "meal.status": "bought",
-    "seat.status": "bought",
-  });
-
-  await base.db.doc(data.ticket.ref).update({
-    status: "bought",
-  });
-
-  await base.db.doc(data.meal.ref).update({
-    status: "bought",
-  });
-
-  await base.db.doc(data.seat.ref).update({
-    status: "bought",
-  });
-
-  try {
-    correctVenueVendor?.update((t) =>
-      t.updateRecord({
-        type: "Ticket",
-        id: data.ticket.id,
-        attributes: {
-          status: "bought",
-        },
-      })
+    const correctVenueVendor = sources.venues.find(
+      (v) => v.name === data.event.ref.split("/")[1]
+    );
+    const correctTransportVendor = sources.transport.find(
+      (v) => v.name === data.transportation.ref.split("/")[1]
+    );
+    const correctCateringVendor = sources.catering.find(
+      (v) => v.name === data.food.ref.split("/")[1]
     );
 
-    correctTransportVendor?.update((t) =>
-      t.updateRecord({
-        type: "Seat",
-        id: data.seat.id,
-        attributes: {
-          status: "bought",
-        },
-      })
-    );
+    await base.db.collection("purchases").doc(data.id).update({
+      status: "bought",
+      "ticket.status": "bought",
+      "meal.status": "bought",
+      "seat.status": "bought",
+    });
 
-    correctCateringVendor?.update((t) =>
-      t.updateRecord({
-        type: "Meal",
-        id: data.meal.id,
-        attributes: {
-          status: "bought",
-        },
-      })
-    );
-    success.push(data.id);
-  } catch (error) {
-    console.error("Error purchasing:", error);
-    errors.push(String(error));
+    await base.db.doc(data.ticket.ref).update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.meal.ref).update({
+      status: "bought",
+    });
+
+    await base.db.doc(data.seat.ref).update({
+      status: "bought",
+    });
+
+    try {
+      correctVenueVendor?.update((t) =>
+        t.updateRecord({
+          type: "Ticket",
+          id: data.ticket.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+
+      correctTransportVendor?.update((t) =>
+        t.updateRecord({
+          type: "Seat",
+          id: data.seat.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+
+      correctCateringVendor?.update((t) =>
+        t.updateRecord({
+          type: "Meal",
+          id: data.meal.id,
+          attributes: {
+            status: "bought",
+          },
+        })
+      );
+      success.push(data.id);
+    } catch (error) {
+      console.error("Error purchasing:", error);
+      errors.push(String(error));
+    }
   }
-
-}
 
   const a = {
     result: {
@@ -427,25 +391,26 @@ exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
       ids: success,
     },
   };
- 
+
   return a;
 });
 
 exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
-  
-  console.log(request.data)
-  const purchaseDoc = ((await base.db.collection("purchases").doc(request.data.id).get())).data();
+  console.log(request.data);
+  const purchaseDoc = (
+    await base.db.collection("purchases").doc(request.data.id).get()
+  ).data();
   //Handle error if the ref doesn't exist
 
   const ticketRef = purchaseDoc?.ticket.ref;
   const seatRef = purchaseDoc?.seat.ref;
   const mealRef = purchaseDoc?.meal.ref;
-  console.log(ticketRef)
-  console.log(seatRef)
-  console.log(mealRef)
+  console.log(ticketRef);
+  console.log(seatRef);
+  console.log(mealRef);
   // Helper function to fetch vendor data
   const fetchVendor = async (ref: any) => {
-    console.log(ref)
+    console.log(ref);
     const id = ref.split("/")[1];
     return await getRef("vendors").doc(id).get();
   };
@@ -481,10 +446,10 @@ exports.removePackage = onCall({ region: "europe-west1" }, async (request) => {
     };
     console.log(a);
     return {
-        valid: false,
-        errors: "Error: One or more vendors are invalid.",
-      }
-  } 
+      valid: false,
+      errors: "Error: One or more vendors are invalid.",
+    };
+  }
 
   const errors = [];
 
