@@ -228,6 +228,7 @@ export default function EventDetails() {
   const [foodOptions, setFoodOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const [eventImageUrl, setEventImageUrl] = useState('');
   const [eventLogoUrl, setEventLogoUrl] = useState('');
@@ -328,7 +329,7 @@ export default function EventDetails() {
     setSnackbarOpen(false);
   };
 
-  const addToCartHandler = async () => {
+   const addToCartHandler = async () => {
     try {
       const reserve = getCallable('endpoints-reserve');
 
@@ -339,6 +340,26 @@ export default function EventDetails() {
           food: selectedFood,
         })
       ).data;
+
+      console.log('Reservation Response:', response);
+
+      if (!response.result.valid) {
+        setSnackbarMessage('Error adding to cart, refresh and try again');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (response.result.message.startsWith('WARNING! Price changed')) {
+        setSnackbarMessage(response.result.message);
+        setSnackbarSeverity('warning');
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage('Package added to cart successfully!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      }
+
       const packageItem = {
         id: response.id,
         event: event,
@@ -349,12 +370,14 @@ export default function EventDetails() {
         food: selectedFood,
         total: selectedTransportation.price + selectedFood.price + event.price,
       };
+
       addToCart(packageItem);
       closeModal();
-      setSnackbarMessage('Package added to cart successfully!');
-      setSnackbarOpen(true);
     } catch (error) {
       console.error('Error reserving:', error);
+      setSnackbarMessage('Error adding to cart, refresh and try again');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 
