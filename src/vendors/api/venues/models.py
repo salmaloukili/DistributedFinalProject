@@ -28,7 +28,7 @@ class Event(BaseModel):
     name = FunctionDefault(db.String(100), default=fake.catch_phrase)
     genre = FunctionDefault(db.String(100), default=fake.music_genre)
     date = FunctionDefault(
-        db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
+        db.Date, default=lambda: fake.date_between(start_date="now", end_date="+2m")
     )
     image_url = FunctionDefault(
         db.String(100), default=lambda: f"/venues/img/{random.randint(1, 15)}"
@@ -83,7 +83,7 @@ def populate_database():
         venue = Venue()
         for _ in range(0, random.randint(10, 11)):
             event = Event(venue_id=venue.id)
-            for _ in range(0, random.randint(0, round(venue.capacity / 4))):
+            for _ in range(0, random.randint(5, 20)):
                 Ticket(event_id=event.id)
     return "Success"
 

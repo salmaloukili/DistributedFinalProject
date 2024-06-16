@@ -1,7 +1,7 @@
 import random
 from safrs import ValidationError, jsonapi_attr
 from ..models import db, fake, FunctionDefault, BaseModel
-
+from datetime import date, timedelta
 
 class Bus(BaseModel):
     __tablename__ = "buss"
@@ -64,12 +64,10 @@ class Seat(BaseModel):
 
 
 def populate_database():
-    for _ in range(0, random.randint(2, 5)):
+    for _ in range(0, random.randint(2, 4)):
         bus = Bus()
-        for _ in range(0, random.randint(2, 4)):
-            schedule = Schedule(bus_id=bus.id)
-            for _ in range(0, random.randint(0, round(bus.capacity / 4))):
-                Seat(schedule_id=schedule.id)
+        for day in range(0, 60):
+            schedule = Schedule(bus_id=bus.id, departure_date=date(2024, 6, 16) + timedelta(day))
     return "Success"
 
 
