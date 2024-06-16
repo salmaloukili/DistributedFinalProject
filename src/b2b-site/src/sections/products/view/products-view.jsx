@@ -16,11 +16,11 @@ export default function AppPage() {
   useEffect(() => {
     const getEvents = getCallable('endpoints-getEvents');
 
-    getEvents()
+    getEvents({ offset: 0, limit: 10 })
       .then((result) => {
         console.log(result);
         if (result.data) {
-          const fetchedEvents = result.data.map(event => ({
+          const fetchedEvents = result.data.map((event) => ({
             id: event.id,
             ...event,
           }));

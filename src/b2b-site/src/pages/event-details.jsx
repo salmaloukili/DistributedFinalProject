@@ -228,7 +228,7 @@ export default function EventDetails() {
   const [foodOptions, setFoodOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const [eventImageUrl, setEventImageUrl] = useState('');
   const [eventLogoUrl, setEventLogoUrl] = useState('');
@@ -280,7 +280,7 @@ export default function EventDetails() {
   const fetchTransportationOptions = async () => {
     const getTransportation = getCallable('endpoints-getTransportation');
     try {
-      const result = await getTransportation(event);
+      const result = await getTransportation({ event: event, offset: 0, limit: 10 });
       if (result.data) {
         setTransportationOptions(result.data);
       } else {
@@ -294,7 +294,7 @@ export default function EventDetails() {
   const fetchFoodOptions = async () => {
     const getFood = getCallable('endpoints-getFood');
     try {
-      const result = await getFood();
+      const result = await getFood({ offset: 0, limit: 10 });
       if (result.data) {
         setFoodOptions(result.data);
       } else {
@@ -329,7 +329,7 @@ export default function EventDetails() {
     setSnackbarOpen(false);
   };
 
-   const addToCartHandler = async () => {
+  const addToCartHandler = async () => {
     try {
       const reserve = getCallable('endpoints-reserve');
 
