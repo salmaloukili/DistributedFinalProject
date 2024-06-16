@@ -50,10 +50,13 @@ export default function Router() {
       return (
         <>
           <Route element={dashboard}>
-             <Route element={<ProductsPage />} index />
-            <Route element={role === 'admin' ? <AdminIndexPage /> : <NonAdminIndexPage />} path="dashboard" />
+            <Route element={<ProductsPage />} index />
+            <Route
+              element={role === 'admin' ? <AdminIndexPage /> : <NonAdminIndexPage />}
+              path="dashboard"
+            />
             <Route element={<UserPage />} path="user" />
-           
+
             <Route element={<BlogPage />} path="blog" />
             <Route element={<EventDetailsPage />} path="event/:id" />
             <Route element={<CartPage />} path="cart" />
