@@ -3,6 +3,14 @@ import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
 
+
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const cors = require("cors")({ origin: true });
+
+
+
+
 // Cloud Function to get all events
 exports.getEvents = onCall({ region: "europe-west1" }, async (request) => {
   const querySnapshot = await base.db.collectionGroup("events").get();
@@ -102,7 +110,7 @@ exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
   return "Authentication Error";
 });
 
-exports.getAllUsers = onCall({ region: "europe-west1" }, async (request) => {
+exports.getAllPackages = onCall({ region: "europe-west1" }, async (request) => {
   if (
     request.auth?.uid &&
     (await base.auth.getUser(request.auth.uid)).customClaims?.role === "admin"
@@ -293,18 +301,48 @@ exports.reserve = onCall({ region: "europe-west1" }, async (request) => {
   return response;
 });
 
-exports.getUserPackages = onCall(
-  { region: "europe-west1" },
-  async (request) => {
-    const querySnapshot = await base.db
-      .collection("purchases")
-      .where("user_id", "==", request.auth?.uid)
-      .where("status", "==", "bought")
-      .get();
+// exports.getUserPackages = onCall(
+//   { region: "europe-west1" },
+//   async (request) => {
+//     const querySnapshot = await base.db
+//       .collection("purchases")
+//       .where("user_id", "==", request.auth?.uid)
+//       .where("status", "==", "bought")
+//       .get();
 
-    return querySnapshot;
-  }
-);
+//     return querySnapshot;
+//   }
+// );
+
+
+
+exports.getUserPackages = functions
+  .region("europe-west1")
+  .https.onCall((data, context) => {
+    return new Promise((resolve, reject) => {
+      cors(data, context, async () => {
+        if (!context.auth) {
+          reject({ message: "Authentication required" });
+          return;
+        }
+
+        try {
+          const querySnapshot = await base
+            .collection("purchases")
+            .where("user_id", "==", context.auth.uid)
+            .where("status", "==", "bought")
+            .get();
+
+          const packages = querySnapshot.docs.map((doc) => doc.data());
+          resolve({ data: packages });
+        } catch (error) {
+          reject({ message: error.message });
+        }
+      });
+    });
+  });
+
+
 
 exports.buyPackage = onCall({ region: "europe-west1" }, async (request) => {
   const success: String[] = [];

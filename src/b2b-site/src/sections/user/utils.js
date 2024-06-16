@@ -35,7 +35,28 @@ export function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-export function applyFilter({ inputData, comparator, filterName }) {
+// export function applyFilter({ inputData, comparator, filterName }) {
+//   const stabilizedThis = inputData.map((el, index) => [el, index]);
+
+//   stabilizedThis.sort((a, b) => {
+//     const order = comparator(a[0], b[0]);
+//     if (order !== 0) return order;
+//     return a[1] - b[1];
+//   });
+
+//   inputData = stabilizedThis.map((el) => el[0]);
+
+//   if (filterName) {
+//     inputData = inputData.filter(
+//       (user) => user.name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
+//     );
+//   }
+
+//   return inputData;
+// }
+
+
+export const applyFilter = ({ inputData, comparator, filterName }) => {
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
   stabilizedThis.sort((a, b) => {
@@ -44,13 +65,17 @@ export function applyFilter({ inputData, comparator, filterName }) {
     return a[1] - b[1];
   });
 
-  inputData = stabilizedThis.map((el) => el[0]);
-
   if (filterName) {
-    inputData = inputData.filter(
-      (user) => user.name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
-    );
+    return stabilizedThis
+      .filter((el) => {
+        const user = el[0];
+        const displayName = user.displayName?.toLowerCase() || '';
+        const email = user.email?.toLowerCase() || '';
+        return (
+          displayName.includes(filterName.toLowerCase()) || email.includes(filterName.toLowerCase())
+        );
+      })
+      .map((el) => el[0]);
   }
-
-  return inputData;
-}
+  return stabilizedThis.map((el) => el[0]);
+};
