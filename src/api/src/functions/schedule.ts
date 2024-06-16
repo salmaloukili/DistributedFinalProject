@@ -82,10 +82,9 @@ async function getLastModified(documentId: string) {
   }
 }
 
-async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
+async function getData(srcs: JSONAPISource[], params: JSONAPIParams[]) {
   const data: any = [];
-
-  for (const source of await sources) {
+  for (const source of srcs) {
     const vendorRef = getRef("vendors").doc(source.name);
     const vendorDoc = await vendorRef.get();
     const vendorData = vendorDoc.data();
@@ -121,7 +120,6 @@ async function getData(sources: JSONAPISource[], params: JSONAPIParams[]) {
 
         const result: any = await query;
         const batch = db.batch();
-
         for (const element of result) {
           const ref = await param.func(element, source);
           const ids = extractID(element.relationships);
@@ -162,7 +160,7 @@ exports.queryTransport = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    await getData(sources.transport, [
+    await getData(await sources.transport, [
       {
         obj: "Bus",
         include: ["schedules"],
@@ -204,7 +202,7 @@ exports.queryCatering = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    await getData(sources.catering, [
+    await getData(await sources.catering, [
       {
         obj: "Menu",
         include: ["meals"],
@@ -227,7 +225,7 @@ exports.queryVenues = functions
   })
   .pubsub.schedule("every 15 minutes")
   .onRun(async (context) => {
-    await getData(sources.venues, [
+    await getData(await sources.venues, [
       {
         obj: "Venue",
         include: ["events"],
