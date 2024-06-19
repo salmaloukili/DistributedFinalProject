@@ -22,7 +22,13 @@ const ImageComponent = ({ filePath, style }) => {
   }, [filePath]);
 
   return (
-    <>{imageUrl ? <img src={imageUrl} alt={filePath} style={style} /> : <p>Loading image...</p>}</>
+    <>
+      {imageUrl ? (
+        <img src={imageUrl} alt={filePath} className="fade-in-image" style={style} />
+      ) : (
+        <p></p>
+      )}
+    </>
   );
 };
 

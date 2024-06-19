@@ -7,7 +7,6 @@ import { getCallable } from 'src/utils/firebase';
 import EventCard from '../event-card';
 import EventSort from '../event-sort';
 
-
 export default function AppPage() {
   const [events, setEvents] = useState([]);
   const [sortedEvents, setSortedEvents] = useState([]);
@@ -41,9 +40,9 @@ export default function AppPage() {
     } else if (sortBy === 'priceDesc') {
       sorted.sort((a, b) => b.max_price - a.max_price);
     } else if (sortBy === 'dateAsc') {
-      sorted.sort((a, b) => (a.date._seconds - b.date._seconds));
+      sorted.sort((a, b) => a.date._seconds - b.date._seconds);
     } else if (sortBy === 'dateDesc') {
-      sorted.sort((a, b) => (b.date._seconds - a.date._seconds));
+      sorted.sort((a, b) => b.date._seconds - a.date._seconds);
     }
     setSortedEvents(sorted);
   };
@@ -79,11 +78,9 @@ export default function AppPage() {
             </Grid>
           ))
         ) : (
-          <Typography variant="body1">Loading events...</Typography>
+          <div></div>
         )}
       </Grid>
     </Container>
   );
 }
-
-
