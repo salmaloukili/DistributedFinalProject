@@ -2,30 +2,40 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
-let response = await fetch('/__/firebase/init.json');
 let app;
 let auth;
 let functions;
 let storage;
+let check;
 
-if (response.ok) {
-  response = await response.json();
-  app = initializeApp(response);
+if (import.meta.env.PROD) {
+  app = initializeApp({
+    apiKey: '',
+    authDomain: 'distributed-421517.firebaseapp.com',
+    projectId: 'distributed-421517',
+    storageBucket: 'distributed-421517.appspot.com',
+    messagingSenderId: '872004267669',
+    appId: '1:872004267669:web:be16d50843b2bddcb2759c',
+    measurementId: 'G-J2JKEQ802Q',
+  });
   auth = getAuth(app);
   functions = getFunctions(app, 'europe-west1');
   storage = getStorage(app);
+  check = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LcD0PwpAAAAAJS_dqQU7tndXlN8esC2-rkkHD46'),
+    isTokenAutoRefreshEnabled: true,
+  });
 } else {
-  response = {
+  app = initializeApp({
     apiKey: 'test-api-key',
     authDomain: 'http://127.0.0.1:9099',
     locationId: 'europe-west',
     messagingSenderId: '872004267669',
     projectId: 'distributed-421517',
     storageBucket: 'distributed-421517.appspot.com',
-  };
-
-  app = initializeApp(response);
+  });
   auth = getAuth(app);
   connectAuthEmulator(auth, 'http://127.0.0.1:9099');
   functions = getFunctions(app, 'europe-west1');
