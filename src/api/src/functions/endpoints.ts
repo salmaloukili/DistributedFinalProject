@@ -59,6 +59,7 @@ exports.getTransportation = onCall(
         .get();
     } catch (error) {
       console.log(error);
+      return;
     }
 
     const buses = await base.db.collectionGroup("buses").get();
@@ -66,7 +67,7 @@ exports.getTransportation = onCall(
       .collection("vendors")
       .where("type", "==", "Transport")
       .get();
-    const data = querySnapshot.docs.map((doc) => {
+    const data = querySnapshot?.docs.map((doc) => {
       const docData = doc.data();
       return {
         id: doc.id,
@@ -247,6 +248,64 @@ exports.reserve = onCall(
           },
         })
       );
+      const batch = db.batch();
+      const ticketDB = db
+        .doc(request.data.event.ref)
+        .collection("tickets")
+        .doc(ticketResponse.id);
+      batch.create(ticketDB, {
+        id: ticketResponse.id,
+        ...ticketResponse.attributes,
+      });
+      const seatDB = db
+        .doc(request.data.transportation.ref)
+        .collection("seats")
+        .doc(seatResponse.id);
+      batch.create(seatDB, {
+        id: seatResponse.id,
+        ...seatResponse.attributes,
+      });
+      const mealDB = db
+        .doc(request.data.food.ref)
+        .collection("meals")
+        .doc(mealResponse.id);
+      batch.create(mealDB, {
+        id: mealResponse.id,
+        ...mealResponse.attributes,
+      });
+      const purchase = db.collection("purchases").doc();
+      const response = {
+        id: purchase.id,
+        user_id: ticketResponse.attributes.user_id,
+        status: "reserved",
+        ticket: {
+          id: ticketResponse.id,
+          ref: ticketDB.path,
+          ...ticketResponse.attributes,
+        },
+        meal: {
+          id: mealResponse.id,
+          ref: mealDB.path,
+          ...mealResponse.attributes,
+        },
+        seat: {
+          id: seatResponse.id,
+          ref: seatDB.path,
+          ...seatResponse.attributes,
+        },
+        others: request.data,
+        result: {
+          valid: true,
+          message:
+            ticketResponse.attributes.price === request.data.event.price
+              ? "Success"
+              : `WARNING! Price changed from ${request.data.event.price} to ${ticketResponse.attributes.price}`,
+        },
+      };
+      batch.create(purchase, response);
+      console.log(response);
+      await batch.commit();
+      return response;
     } catch (error) {
       console.error("Error adding records:", error);
       errors.push(error);
@@ -284,63 +343,6 @@ exports.reserve = onCall(
         },
       };
     }
-
-    const ticketDB = db
-      .doc(request.data.event.ref)
-      .collection("tickets")
-      .doc(ticketResponse.id);
-    ticketDB.set({
-      id: ticketResponse.id,
-      ...ticketResponse.attributes,
-    });
-    const seatDB = db
-      .doc(request.data.transportation.ref)
-      .collection("seats")
-      .doc(seatResponse.id);
-    seatDB.set({
-      id: seatResponse.id,
-      ...seatResponse.attributes,
-    });
-    const mealDB = db
-      .doc(request.data.food.ref)
-      .collection("meals")
-      .doc(mealResponse.id);
-    mealDB.set({
-      id: mealResponse.id,
-      ...mealResponse.attributes,
-    });
-    const purchase = db.collection("purchases").doc();
-    const response = {
-      id: purchase.id,
-      user_id: ticketResponse.attributes.user_id,
-      status: "reserved",
-      ticket: {
-        id: ticketResponse.id,
-        ref: ticketDB.path,
-        ...ticketResponse.attributes,
-      },
-      meal: {
-        id: mealResponse.id,
-        ref: mealDB.path,
-        ...mealResponse.attributes,
-      },
-      seat: {
-        id: seatResponse.id,
-        ref: seatDB.path,
-        ...seatResponse.attributes,
-      },
-      others: request.data,
-      result: {
-        valid: true,
-        message:
-          ticketResponse.attributes.price === request.data.event.price
-            ? "Success"
-            : `WARNING! Price changed from ${request.data.event.price} to ${ticketResponse.attributes.price}`,
-      },
-    };
-    purchase.set(response);
-    console.log(response);
-    return response;
   }
 );
 
@@ -382,13 +384,6 @@ exports.buyPackage = onCall(
         (v) => v.name === data.food.ref.split("/")[1]
       );
 
-      await base.db.collection("purchases").doc(data.id).update({
-        status: "bought",
-        "ticket.status": "bought",
-        "meal.status": "bought",
-        "seat.status": "bought",
-      });
-
       try {
         correctVenueVendor?.update((t: any) =>
           t.updateRecord({
@@ -419,6 +414,26 @@ exports.buyPackage = onCall(
             },
           })
         );
+        const batch = db.batch();
+        batch.update(db.collection("purchases").doc(data.id), {
+          status: "bought",
+          "ticket.status": "bought",
+          "meal.status": "bought",
+          "seat.status": "bought",
+        });
+
+        batch.update(db.doc(data.ticket.ref), {
+          status: "bought",
+        });
+
+        batch.update(db.doc(data.meal.ref), {
+          status: "bought",
+        });
+
+        batch.update(db.doc(data.seat.ref), {
+          status: "bought",
+        });
+        await batch.commit();
         success.push(data.id);
       } catch (error) {
         console.error("Error purchasing:", error);
@@ -426,28 +441,14 @@ exports.buyPackage = onCall(
         valid = false;
         continue;
       }
-      await base.db.doc(data.ticket.ref).update({
-        status: "bought",
-      });
-
-      await base.db.doc(data.meal.ref).update({
-        status: "bought",
-      });
-
-      await base.db.doc(data.seat.ref).update({
-        status: "bought",
-      });
     }
-
-    const a = {
+    return {
       result: {
         valid: valid,
         message: errors,
         ids: success,
       },
     };
-
-    return a;
   }
 );
 

@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
@@ -102,7 +98,10 @@ export default function AppView() {
         const getAllUsers = getCallable('endpoints-getAllUsers');
         const getAllPackages = getCallable('endpoints-getAllPackages');
 
-        const [userResponse, packageResponse] = await Promise.all([getAllUsers(), getAllPackages()]);
+        const [userResponse, packageResponse] = await Promise.all([
+          getAllUsers(),
+          getAllPackages(),
+        ]);
 
         if (userResponse.data) {
           setTotalUsers(userResponse.data.length);
@@ -118,7 +117,9 @@ export default function AppView() {
             const eventPrice = pkg?.others?.event?.price || 0;
             const transportPrice = pkg?.others?.transportation?.price || 0;
             const foodPrice = pkg?.others?.food?.price || 0;
-            return total + (parseFloat(eventPrice) + parseFloat(transportPrice) + parseFloat(foodPrice));
+            return (
+              total + (parseFloat(eventPrice) + parseFloat(transportPrice) + parseFloat(foodPrice))
+            );
           }, 0);
           setMonthlySales(totalSales);
         } else {
@@ -141,7 +142,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Total Users"
-            total={totalUsers} 
+            total={totalUsers}
             color="info"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
           />
@@ -150,7 +151,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Monthly Sales"
-            total={parseFloat(monthlySales.toFixed(2))} 
+            total={parseFloat(monthlySales.toFixed(2))}
             color="success"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
@@ -159,7 +160,7 @@ export default function AppView() {
         <Grid xs={12} sm={6} md={4}>
           <AppWidgetSummary
             title="Packages Sold"
-            total={packagesSold} 
+            total={packagesSold}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
           />
