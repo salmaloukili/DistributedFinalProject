@@ -18,14 +18,12 @@ export default function AppPage() {
 
     getEvents({ offset: 0, limit: 10 })
       .then((result) => {
-        console.log(result);
         if (result.data) {
           const fetchedEvents = result.data.map((event) => ({
             id: event.id,
             ...event,
           }));
           setEvents(fetchedEvents);
-          console.log(fetchedEvents);
           sortEvents(fetchedEvents, sortOption); // Initial sort
         } else {
           console.error('Error fetching events:', result.data.error);

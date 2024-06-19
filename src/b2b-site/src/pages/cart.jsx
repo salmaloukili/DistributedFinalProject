@@ -29,7 +29,6 @@ export default function Cart() {
       const removePackage = getCallable('endpoints-removePackage');
       const response = (await removePackage({ id: packageItem.id })).data;
 
-      console.log('Remove Package Response:', response);
 
       if (!response.valid) {
         setSnackbarMessage('Error removing package, refresh and try again');
@@ -54,9 +53,6 @@ export default function Cart() {
     try {
       const buyPackage = getCallable('endpoints-buyPackage');
       const response = (await buyPackage(cart)).data;
-      console.log('Cart', cart);
-      console.log('Buy Package Response:', response);
-
       if (!response.result.valid) {
         setSnackbarMessage(`Error buying packages: ${response.result.message.join(', ')}`);
         setSnackbarSeverity('error');

@@ -7,78 +7,32 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import ImageComponent from 'src/components/firebase-image';
-import { useEffect, useState } from 'react';
-import { storage } from 'src/utils/firebase';
-import { getDownloadURL, ref } from 'firebase/storage';
 
 export default function EventCard({ event }) {
-  const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, event.image_url);
-        const url = await getDownloadURL(storageRef);
-        setImageUrl(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [event.image_url]);
-
-  const [logoURL, setLogoURL] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, event.vendor.logo_url);
-        const url = await getDownloadURL(storageRef);
-        setLogoURL(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [event.vendor.logo_url]);
-
-  const renderImg = (
-    <Box
-      component="img"
-      alt={event.name}
-      src={imageUrl}
-      sx={{
-        top: 0,
-        width: 1,
-        height: 1,
-        objectFit: 'cover',
-        position: 'absolute',
-      }}
-    />
-  );
-
-  const renderDetails = (
-    <Typography variant="subtitle1">
-      {event.date && event.date._seconds
-        ? new Date(event.date._seconds * 1000).toLocaleDateString('en-GB')
-        : 'Date not available'}
-      <br />
-      {`Price: ${event.price} EUR`}
-    </Typography>
-  );
-
   return (
-    <Card>
-      <Box sx={{ pt: '100%', position: 'relative' }}>
+    <Card sx={{ minHeight: '20rem' }}>
+      <Box sx={{ position: 'relative' }}>
         <Link
           component={RouterLink}
           to={`/event/${event.id}`}
           state={{ event }}
           sx={{ display: 'block', height: '100%' }}
         >
-          {renderImg}
+          <Box
+            sx={{
+              top: 0,
+              width: 1,
+              height: 1,
+
+              objectFit: 'cover',
+              position: 'absolute',
+            }}
+          >
+            <ImageComponent
+              filePath={event.image_url}
+              style={{ display: 'block', height: '10rem', width: '100%' }}
+            />
+          </Box>
         </Link>
         <Box
           sx={{
@@ -87,16 +41,20 @@ export default function EventCard({ event }) {
             left: 8,
             width: 40,
             height: 40,
+            background: 'white',
             borderRadius: '50%',
             overflow: 'hidden',
             border: '2px solid white',
           }}
         >
-          <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+          <ImageComponent
+            filePath={event.vendor.logo_url}
+            style={{ width: '100%', height: 'auto' }}
+          />
         </Box>
       </Box>
 
-      <Stack spacing={2} sx={{ p: 3 }}>
+      <Stack spacing={2} sx={{ p: 3, pt: '11rem' }}>
         <Link
           component={RouterLink}
           to={`/event/${event.id}`}
@@ -104,11 +62,16 @@ export default function EventCard({ event }) {
           color="inherit"
           underline="hover"
           variant="subtitle2"
-          noWrap
         >
           {event.name}
         </Link>
-        {renderDetails}
+        <Typography variant="subtitle1">
+          {event.date && event.date._seconds
+            ? new Date(event.date._seconds * 1000).toLocaleDateString('en-GB')
+            : 'Date not available'}
+          <br />
+          {`Price: ${event.price} EUR`}
+        </Typography>
       </Stack>
     </Card>
   );
@@ -122,7 +85,7 @@ EventCard.propTypes = {
     date: PropTypes.shape({
       _seconds: PropTypes.number.isRequired,
     }).isRequired,
-    venue_id: PropTypes.string.isRequired,
+    venue_id: PropTypes.any.isRequired,
     max_price: PropTypes.number.isRequired,
     price: PropTypes.number.isRequired,
   }).isRequired,

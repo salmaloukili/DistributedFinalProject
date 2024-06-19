@@ -26,38 +26,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 function TransportationOption({ option, setSelectedTransportation, handleNext }) {
-  const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, option.bus.image_url);
-        const url = await getDownloadURL(storageRef);
-        setImageUrl(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [option.bus.image_url]);
-
-  const [logoURL, setLogoURL] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, option.vendor.logo_url);
-        const url = await getDownloadURL(storageRef);
-        setLogoURL(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [option.vendor.logo_url]);
-
   return (
     <Grid item xs={12} sm={6} key={option.id}>
       <Card
@@ -66,7 +34,12 @@ function TransportationOption({ option, setSelectedTransportation, handleNext })
           handleNext();
         }}
       >
-        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardMedia height="10rem" alt={option.bus.model}>
+          <ImageComponent
+            style={{ width: '100%', height: '10rem' }}
+            filePath={option.bus.image_url}
+          />
+        </CardMedia>
         <CardContent>
           <Box
             sx={{
@@ -85,7 +58,10 @@ function TransportationOption({ option, setSelectedTransportation, handleNext })
                 mr: 2,
               }}
             >
-              <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+              <ImageComponent
+                filePath={option.vendor.logo_url}
+                style={{ width: '100%', height: 'auto' }}
+              />
             </Box>
             <Typography variant="body1">{option.vendor.name}</Typography>
           </Box>
@@ -123,47 +99,22 @@ TransportationOption.propTypes = {
 };
 
 function FoodOption({ option, setSelectedFood, handleNext }) {
-  const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, option.image_url);
-        const url = await getDownloadURL(storageRef);
-        setImageUrl(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [option.image_url]);
-
-  const [logoURL, setLogoURL] = useState('');
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const storageRef = ref(storage, option.vendor.logo_url);
-        const url = await getDownloadURL(storageRef);
-        setLogoURL(url);
-      } catch (error) {
-        console.error('Error fetching image:', error);
-      }
-    };
-
-    fetchImage();
-  }, [option.vendor.logo_url]);
-
   return (
     <Grid item xs={12} sm={6} key={option.id}>
       <Card
+        sx={{ height: '31rem' }}
         onClick={() => {
           setSelectedFood(option);
           handleNext();
         }}
       >
-        <CardMedia component="img" height="140" image={imageUrl} alt={option.food} />
+        <CardMedia alt={option.food}>
+          <ImageComponent
+            style={{ 'object-fit': 'cover', height: '10rem', width: '100%' }}
+            filePath={option.image_url}
+          />
+        </CardMedia>
+
         <CardContent>
           <Box
             sx={{
@@ -182,7 +133,10 @@ function FoodOption({ option, setSelectedFood, handleNext }) {
                 mr: 2,
               }}
             >
-              <ImageComponent filePath={logoURL} style={{ width: '100%', height: 'auto' }} />
+              <ImageComponent
+                filePath={option.vendor.logo_url}
+                style={{ width: '100%', height: 'auto' }}
+              />
             </Box>
             <Typography variant="body1">{option.vendor.name}</Typography>
           </Box>
@@ -214,14 +168,12 @@ FoodOption.propTypes = {
 };
 
 export default function EventDetails() {
-  const { id } = useParams();
   const location = useLocation();
   const { event } = location.state || {};
   const { addToCart } = useContext(CartContext);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [step, setStep] = useState(1);
-  const [selectedSeat, setSelectedSeat] = useState(null);
   const [selectedTransportation, setSelectedTransportation] = useState(null);
   const [selectedFood, setSelectedFood] = useState(null);
   const [transportationOptions, setTransportationOptions] = useState([]);
@@ -229,37 +181,6 @@ export default function EventDetails() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  const [eventImageUrl, setEventImageUrl] = useState('');
-  const [eventLogoUrl, setEventLogoUrl] = useState('');
-
-  useEffect(() => {
-    if (event && event.image_url) {
-      const fetchImage = async () => {
-        try {
-          const storageRef = ref(storage, event.image_url);
-          const url = await getDownloadURL(storageRef);
-          setEventImageUrl(url);
-        } catch (error) {
-          console.error('Error fetching event image:', error);
-        }
-      };
-      fetchImage();
-    }
-
-    if (event && event.vendor && event.vendor.logo_url) {
-      const fetchLogo = async () => {
-        try {
-          const storageRef = ref(storage, event.vendor.logo_url);
-          const url = await getDownloadURL(storageRef);
-          setEventLogoUrl(url);
-        } catch (error) {
-          console.error('Error fetching vendor logo:', error);
-        }
-      };
-      fetchLogo();
-    }
-  }, [event]);
 
   useEffect(() => {
     if (modalOpen && step === 1) {
@@ -309,7 +230,6 @@ export default function EventDetails() {
   const closeModal = () => {
     setModalOpen(false);
     setStep(1);
-    setSelectedSeat(null);
     setSelectedTransportation(null);
     setSelectedFood(null);
   };
@@ -340,8 +260,6 @@ export default function EventDetails() {
           food: selectedFood,
         })
       ).data;
-
-      console.log('Reservation Response:', response);
 
       if (!response.result.valid) {
         setSnackbarMessage('Error adding to cart, refresh and try again');
@@ -382,50 +300,54 @@ export default function EventDetails() {
   };
 
   const renderTransportationOptions = () => (
-    <Grid container spacing={2}>
+    <>
       {transportationOptions.map((opt) => (
         <TransportationOption
-          key={opt.id}
+          key={opt.ref}
           option={opt}
           setSelectedTransportation={setSelectedTransportation}
           handleNext={handleNext}
         />
       ))}
-    </Grid>
+    </>
   );
 
   const renderFoodOptions = () => (
-    <Grid container spacing={2}>
+    <>
       {foodOptions.map((opt) => (
         <FoodOption
-          key={opt.id}
+          key={opt.ref}
           option={opt}
           setSelectedFood={setSelectedFood}
           handleNext={handleNext}
         />
       ))}
-    </Grid>
+    </>
   );
 
   const renderModalContent = () => {
     switch (step) {
       case 1:
         return (
-          <Box>
+          <>
             <Typography variant="h6">Step 2: Select Transportation</Typography>
-            {renderTransportationOptions()}
-          </Box>
+            <Grid container spacing={2}>
+              {renderTransportationOptions()}
+            </Grid>
+          </>
         );
       case 2:
         return (
-          <Box>
+          <>
             <Typography variant="h6">Step 3: Select Food</Typography>
-            {renderFoodOptions()}
-          </Box>
+            <Grid container spacing={2}>
+              {renderFoodOptions()}
+            </Grid>
+          </>
         );
       case 3:
         return (
-          <Box>
+          <>
             <Typography variant="h6">Package Summary</Typography>
             <Typography>Event: {event.name}</Typography>
             <Typography>Ticket: {event.price} EUR</Typography>
@@ -445,7 +367,7 @@ export default function EventDetails() {
             <Button onClick={addToCartHandler} disabled={!selectedTransportation || !selectedFood}>
               Add to Cart
             </Button>
-          </Box>
+          </>
         );
       default:
         return null;
@@ -454,21 +376,31 @@ export default function EventDetails() {
 
   return (
     <Container>
-      <Card>
-        <CardMedia component="img" height="300" image={eventImageUrl} alt={event.name} />
+      <Card sx={{ m: '2rem' }}>
+        <CardMedia height="300" alt={event.name}>
+          <ImageComponent
+            style={{ display: 'block', height: '30rem', width: '100%' }}
+            filePath={event.image_url}
+          />
+        </CardMedia>
         <Box
           sx={{
             position: 'absolute',
-            top: 8,
-            left: 8,
-            width: 40,
-            height: 40,
+            top: '1rem',
+            left: '1rem',
+            width: '6rem',
+            height: '6rem',
             borderRadius: '50%',
             overflow: 'hidden',
             border: '2px solid white',
+            alignContent: 'center',
+            background: 'white',
           }}
         >
-          <ImageComponent filePath={eventLogoUrl} style={{ width: '100%', height: 'auto' }} />
+          <ImageComponent
+            filePath={event.vendor.logo_url}
+            style={{ width: '100%', height: 'auto' }}
+          />
         </Box>
         <CardContent>
           <Typography variant="h4" gutterBottom>
@@ -534,14 +466,14 @@ export default function EventDetails() {
             overflowY: 'auto',
           }}
         >
-          {renderModalContent()}
+          <Box>{renderModalContent()}</Box>
           <Stack direction="row" justifyContent="space-between" mt={2}>
             <Button onClick={handleBack} disabled={step === 1}>
               Back
             </Button>
-            <Button onClick={handleNext} disabled={step === 3}>
+            {/* <Button onClick={handleNext} disabled={step === 3}>
               Next
-            </Button>
+            </Button> */}
           </Stack>
         </Box>
       </Modal>
@@ -551,7 +483,7 @@ export default function EventDetails() {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity="success">
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

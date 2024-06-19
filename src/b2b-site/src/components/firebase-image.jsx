@@ -22,9 +22,7 @@ const ImageComponent = ({ filePath, style }) => {
   }, [filePath]);
 
   return (
-    <div>
-      {imageUrl ? <img src={imageUrl} alt={filePath} style={style} /> : <p>Loading image...</p>}
-    </div>
+    <>{imageUrl ? <img src={imageUrl} alt={filePath} style={style} /> : <p>Loading image...</p>}</>
   );
 };
 

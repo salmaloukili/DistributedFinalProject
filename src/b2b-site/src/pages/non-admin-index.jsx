@@ -23,7 +23,6 @@ export default function NonAdminIndexPage() {
       try {
         const getUserPackages = getCallable('endpoints-getUserPackages');
         const response = await getUserPackages();
-        console.log("get user packages response", response.data);
         if (response.data) {
           setTickets(response.data);
         } else {
