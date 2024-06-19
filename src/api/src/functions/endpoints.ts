@@ -7,34 +7,37 @@ import { Timestamp } from "firebase-admin/firestore";
 exports.getEvents = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
-    const requestData = request.data;
-    const querySnapshot = await base.db
+    const eventPromise = base.db
       .collectionGroup("events")
-      .limit(requestData.limit)
-      .offset(requestData.offset)
+      .limit(request.data.limit)
+      .offset(request.data.offset)
       .get();
-    const vendors = await base.db
+    const venuePromise = base.db.collectionGroup("venues").get();
+    const vendorPromise = base.db
       .collection("vendors")
       .where("type", "==", "Venue")
       .get();
-    const venues = await base.db.collectionGroup("venues").get();
 
-    const data = querySnapshot.docs.map((doc) => {
+    const [events, venues, vendors] = await Promise.all([
+      eventPromise,
+      venuePromise,
+      vendorPromise,
+    ]);
+
+    const data = events.docs.map((doc) => {
+      const splitRef = doc.ref.path.split("/");
+      const vendorID = splitRef.at(1);
+      const venueRef = splitRef.slice(0, 4).join("/");
+
       return {
         id: doc.id,
         ref: doc.ref.path,
         ...doc.data(),
-        vendor: vendors.docs
-          .find((vn) => vn.id === doc.ref.path.split("/").at(1))
-          ?.data(),
-        venue: venues.docs
-          .find(
-            (ve) =>
-              ve.ref.path.split("/").at(1) === doc.ref.path.split("/").at(1)
-          )
-          ?.data(),
+        vendor: vendors.docs.find((vn) => vn.id === vendorID)?.data(),
+        venue: venues.docs.find((ve) => ve.ref.path === venueRef)?.data(),
       };
     });
     return data;
@@ -45,43 +48,41 @@ exports.getEvents = onCall(
 exports.getTransportation = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const requestData = request.data;
     const eventDate = new Timestamp(requestData.event.date._seconds, 0);
-    let querySnapshot;
-    try {
-      querySnapshot = await base.db
-        .collectionGroup("schedules")
-        .where("departure_date", "==", eventDate.toDate())
-        .limit(requestData.limit)
-        .offset(requestData.offset)
-        .get();
-    } catch (error) {
-      console.log(error);
-      return;
-    }
 
-    const buses = await base.db.collectionGroup("buses").get();
-    const vendors = await base.db
+    const schedulePromise = base.db
+      .collectionGroup("schedules")
+      .where("departure_date", "==", eventDate.toDate())
+      .limit(requestData.limit)
+      .offset(requestData.offset)
+      .get();
+    const busPromise = base.db.collectionGroup("buses").get();
+    const vendorPromise = base.db
       .collection("vendors")
       .where("type", "==", "Transport")
       .get();
-    const data = querySnapshot?.docs.map((doc) => {
+
+    const [schedules, buses, vendors] = await Promise.all([
+      schedulePromise,
+      busPromise,
+      vendorPromise,
+    ]);
+
+    const data = schedules?.docs.map((doc) => {
       const docData = doc.data();
+      const splitRef = doc.ref.path.split("/");
+      const vendorID = splitRef.at(1);
+      const busRef = splitRef.slice(0, 4).join("/");
       return {
         id: doc.id,
         ref: doc.ref.path,
         ...docData,
-        bus: buses.docs
-          .find(
-            (bus) =>
-              bus.ref.path.split("/").at(1) === doc.ref.path.split("/").at(1)
-          )
-          ?.data(),
-        vendor: vendors.docs
-          .find((vn) => vn.id === doc.ref.path.split("/").at(1))
-          ?.data(),
+        bus: buses.docs.find((bus) => bus.ref.path === busRef)?.data(),
+        vendor: vendors.docs.find((vn) => vn.id === vendorID)?.data(),
       };
     });
     return data;
@@ -91,27 +92,28 @@ exports.getTransportation = onCall(
 exports.getFood = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const requestData = request.data;
-    const querySnapshot = await base.db
+    const menuPromise = base.db
       .collectionGroup("menus")
       .limit(requestData.limit)
       .offset(requestData.offset)
       .get();
-    const vendors = await base.db
+    const vendorPromise = base.db
       .collection("vendors")
       .where("type", "==", "Catering")
       .get();
+    const [vendors, menus] = await Promise.all([vendorPromise, menuPromise]);
 
-    const data = querySnapshot.docs.map((doc) => {
+    const data = menus.docs.map((doc) => {
+      const vendorID = doc.ref.path.split("/").at(1);
       return {
         id: doc.id,
         ref: doc.ref.path,
         ...doc.data(),
-        vendor: vendors.docs
-          .find((vn) => vn.id === doc.ref.path.split("/").at(1))
-          ?.data(),
+        vendor: vendors.docs.find((vn) => vn.id === vendorID)?.data(),
       };
     });
     return data;
@@ -162,6 +164,7 @@ exports.getAllPackages = onCall(
 exports.reserve = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const dt = new Date();
@@ -349,6 +352,7 @@ exports.reserve = onCall(
 exports.getUserPackages = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const querySnapshot = await base.db
@@ -364,6 +368,7 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const success: String[] = [];
@@ -455,6 +460,7 @@ exports.buyPackage = onCall(
 exports.removePackage = onCall(
   {
     region: "europe-west1",
+    minInstances: 1,
   },
   async (request) => {
     const purchaseDoc = (
@@ -554,7 +560,3 @@ exports.removePackage = onCall(
     return response;
   }
 );
-// TODauO: ADD the data to firebase
-// TODO: Purchases
-// TODO: Make sure salma gets the errors so she can display them.
-// TODO: Test for errors (full venue), disconnectedvendor, etc.

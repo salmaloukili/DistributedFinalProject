@@ -71,6 +71,8 @@ export default function EventCard({ event }) {
             : 'Date not available'}
           <br />
           {`Price: ${event.price} EUR`}
+          <br />
+          {`Venue: ${event.venue.name} EUR`}
         </Typography>
       </Stack>
     </Card>

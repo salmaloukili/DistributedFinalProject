@@ -181,6 +181,11 @@ export default function EventDetails() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  
+  useEffect(() => {
+    fetchTransportationOptions();
+    fetchFoodOptions();
+  }, []);
 
   useEffect(() => {
     if (modalOpen && step === 1) {
