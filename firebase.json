@@ -24,11 +24,6 @@
       "predeploy": ["npm --prefix src/b2b-site run build"],
       "rewrites": [
         {
-          "source": "/api/**",
-          "function": "functions_api",
-          "region": "europe-west1"
-        },
-        {
           "source": "**",
           "destination": "/index.html"
         }
