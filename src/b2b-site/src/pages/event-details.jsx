@@ -295,6 +295,7 @@ export default function EventDetails() {
 
       addToCart(packageItem);
       closeModal();
+      console.log(packageItem);
     } catch (error) {
       console.error('Error reserving:', error);
       setSnackbarMessage('Error adding to cart, refresh and try again');

@@ -40,6 +40,7 @@ export default function Cart() {
       setSnackbarMessage('Package removed successfully');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
+      console.log(response);
     } catch (error) {
       console.log('Error removing package:', error);
       setSnackbarMessage('Error removing package, refresh and try again');
@@ -63,6 +64,7 @@ export default function Cart() {
       setSnackbarMessage('All packages bought successfully!');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
+      console.log(response);
     } catch (error) {
       console.error('Error buying packages:', error);
       setSnackbarMessage('Error buying packages, refresh and try again');

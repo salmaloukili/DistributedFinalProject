@@ -26,7 +26,7 @@ const ImageComponent = ({ filePath, style }) => {
       {imageUrl ? (
         <img src={imageUrl} alt={filePath} className="fade-in-image" style={style} />
       ) : (
-        <p></p>
+        <p style={style}></p>
       )}
     </>
   );
