@@ -2,21 +2,8 @@ import React, { createContext, useState, useEffect, useCallback, useMemo } from 
 import PropTypes from 'prop-types';
 import { getAuth, sendEmailVerification } from 'firebase/auth';
 import { getCallable } from 'src/utils/firebase';
-import {
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Box,
-  Button,
-  Stack,
-  Snackbar,
-} from '@mui/material';
-import MuiAlert from '@mui/material/Alert';
 
 export const CartContext = createContext();
-
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
@@ -54,40 +41,34 @@ export const CartProvider = ({ children }) => {
           newTimers[item.id] = timeLeft;
         } else {
           try {
-      const removePackage = getCallable('endpoints-removePackage');
-      const response = (await removePackage({ id: item.id })).data;
+            const removePackage = getCallable('endpoints-removePackage');
+            const response = (await removePackage({ id: item.id })).data;
 
-      console.log('Remove Package Response:', response);
+            console.log('Remove Package Response:', response);
 
-      if (!response.valid) {
-        setSnackbarMessage('Error removing package, refresh and try again');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-        return;
-      }
+            if (!response.valid) {
+              setSnackbarMessage('Error removing package, refresh and try again');
+              setSnackbarSeverity('error');
+              setSnackbarOpen(true);
+              return;
+            }
 
-      setCart(cart.filter((item) => item.id !== item.id));
-      setSnackbarMessage('Your time to buy the package is up');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.log('Error removing package:', error);
-      setSnackbarMessage('Error removing package, refresh and try again');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-          // try {
-          //   const removePackage = getCallable('endpoints-removePackage');
-          //   await removePackage({ id: item.id });
-          // } catch (error) {
-          //   console.error('Error removing package:', error);
-          // }
+            setCart(cart.filter((item) => item.id !== item.id));
+            setSnackbarMessage('Your time to buy the package is up');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+          } catch (error) {
+            console.log('Error removing package:', error);
+            setSnackbarMessage('Error removing package, refresh and try again');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+          }
         }
       }
 
       setCart(newCart);
       setTimers(newTimers);
-    }, 1000); // Check every second
+    }, 10000); // Check every second
 
     return () => clearInterval(interval);
   }, [cart]);
@@ -95,16 +76,16 @@ export const CartProvider = ({ children }) => {
   const addToCart = useCallback((packageItem) => {
     setCart((prevCart) => [
       ...prevCart,
-      { ...packageItem, expiry: Date.now() + 7 * 60 * 1000 } // 7 minutes
+      { ...packageItem, expiry: Date.now() + 7 * 60 * 1000 }, // 7 minutes
     ]);
     setTimers((prevTimers) => ({
       ...prevTimers,
-      [packageItem.id]: 7 * 60 * 1000 // 7 minutes
+      [packageItem.id]: 7 * 60 * 1000, // 7 minutes
     }));
   }, []);
 
   const removeFromCart = useCallback((id) => {
-    setCart((prevCart) => prevCart.filter(item => item.id !== id));
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
     setTimers((prevTimers) => {
       const { [id]: _, ...rest } = prevTimers;
       return rest;
@@ -128,15 +109,21 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const contextValue = useMemo(() => ({
-    cart, addToCart, removeFromCart, clearCart, sendConfirmationEmail, timers, setCart, setTimers
-  }), [cart, addToCart, removeFromCart, clearCart, sendConfirmationEmail, timers]);
-
-  return (
-    <CartContext.Provider value={contextValue}>
-      {children}
-    </CartContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      cart,
+      addToCart,
+      removeFromCart,
+      clearCart,
+      sendConfirmationEmail,
+      timers,
+      setCart,
+      setTimers,
+    }),
+    [cart, addToCart, removeFromCart, clearCart, sendConfirmationEmail, timers]
   );
+
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 };
 
 CartProvider.propTypes = {

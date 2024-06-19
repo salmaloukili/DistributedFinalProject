@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { useParams, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -17,9 +17,8 @@ import {
 } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import { CartContext } from 'src/context/CartContext';
-import { getCallable, storage } from 'src/utils/firebase';
+import { getCallable } from 'src/utils/firebase';
 import ImageComponent from 'src/components/firebase-image';
-import { getDownloadURL, ref } from 'firebase/storage';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -110,7 +109,7 @@ function FoodOption({ option, setSelectedFood, handleNext }) {
       >
         <CardMedia alt={option.food}>
           <ImageComponent
-            style={{ 'object-fit': 'cover', height: '10rem', width: '100%' }}
+            style={{ objectFit: 'cover', height: '10rem', width: '100%' }}
             filePath={option.image_url}
           />
         </CardMedia>
@@ -181,7 +180,7 @@ export default function EventDetails() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  
+
   useEffect(() => {
     fetchTransportationOptions();
     fetchFoodOptions();
@@ -364,9 +363,11 @@ export default function EventDetails() {
             </Typography>
             <Typography>
               Total:{' '}
-              {(selectedTransportation?.price || 0) +
-                (selectedFood?.price || 0) +
-                (event.price || 0)}{' '}
+              {Number(
+                (selectedTransportation?.price || 0) +
+                  (selectedFood?.price || 0) +
+                  (event.price || 0)
+              ).toFixed(2)}{' '}
               EUR
             </Typography>
             <Button onClick={addToCartHandler} disabled={!selectedTransportation || !selectedFood}>
@@ -485,6 +486,7 @@ export default function EventDetails() {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
+        style={{ marginTop: '2rem' }}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >

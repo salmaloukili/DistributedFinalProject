@@ -29,7 +29,6 @@ export default function Cart() {
       const removePackage = getCallable('endpoints-removePackage');
       const response = (await removePackage({ id: packageItem.id })).data;
 
-
       if (!response.valid) {
         setSnackbarMessage('Error removing package, refresh and try again');
         setSnackbarSeverity('error');
@@ -80,7 +79,7 @@ export default function Cart() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const now = Date.now();
       const updatedTimers = {};
 
@@ -169,6 +168,7 @@ export default function Cart() {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
+        style={{ marginTop: '2rem' }}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
