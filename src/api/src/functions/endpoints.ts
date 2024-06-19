@@ -2,7 +2,7 @@ import { onCall } from "firebase-functions/v2/https";
 import * as base from "../firebase";
 import { db, getRef } from "../firebase";
 import sources from "../orbit/sources";
-// import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 // Cloud Function to get all events
 exports.getEvents = onCall(
   {
@@ -48,14 +48,18 @@ exports.getTransportation = onCall(
   },
   async (request) => {
     const requestData = request.data;
-    // const eventDate = new Timestamp(requestData.event.date._seconds, 0);
-
-    const querySnapshot = await base.db
-      .collectionGroup("schedules")
-      .limit(requestData.limit)
-      .offset(requestData.offset)
-      // .where("departure_date", "==", eventDate.toDate())
-      .get();
+    const eventDate = new Timestamp(requestData.event.date._seconds, 0);
+    let querySnapshot;
+    try {
+      querySnapshot = await base.db
+        .collectionGroup("schedules")
+        .where("departure_date", "==", eventDate.toDate())
+        .limit(requestData.limit)
+        .offset(requestData.offset)
+        .get();
+    } catch (error) {
+      console.log(error);
+    }
 
     const buses = await base.db.collectionGroup("buses").get();
     const vendors = await base.db
