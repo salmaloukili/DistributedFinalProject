@@ -29,7 +29,7 @@ class Meal(BaseModel):
     menu_id = db.Column(db.Integer, db.ForeignKey("menus.id"), nullable=False)
     menu = db.relationship("Menu", back_populates="meals")
     meal_date = FunctionDefault(
-        db.Date, default=lambda: fake.date_between(start_date="-1m", end_date="+1m")
+        db.Date, default=lambda: fake.date_between(start_date="today", end_date="+1M")
     )
     status = FunctionDefault(
         db.String(100),
@@ -50,6 +50,9 @@ class Meal(BaseModel):
 
 
 def populate_database():
+    if Menu.query.count() > 1:
+        return "Success"
+
     for _ in range(0, random.randint(5, 10)):
         menu = Menu()
         for _ in range(0, random.randint(5, 10)):

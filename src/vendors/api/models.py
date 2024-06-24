@@ -104,6 +104,8 @@ class Employee(db.Model, UserMixin):
 
 
 def populate_database():
+    if Employee.query.count() == 1:
+        return "Success"
 
     db.drop_all()
     db.create_all()

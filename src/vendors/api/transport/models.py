@@ -64,6 +64,8 @@ class Seat(BaseModel):
 
 
 def populate_database():
+    if Bus.query.count() > 1:
+        return "Success"
     for _ in range(0, random.randint(2, 4)):
         bus = Bus()
         for day in range(0, 60):

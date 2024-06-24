@@ -247,7 +247,7 @@ exports.reserve = onCall(
         t.addRecord({
           type: "Meal",
           attributes: {
-            meal_date: dt,
+            meal_date: request.data.event.date,
             status: "reserved",
             user_id: request.auth?.uid,
             menu_id: parseInt(request.data.food.id, 10),

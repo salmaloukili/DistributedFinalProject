@@ -62,14 +62,17 @@ def setup_database(app):
                     "type": "apiKey",
                     "in": "header",
                     "name": "Authorization",
-                    "description": "Enter the token with the `Bearer: ` prefix, e.g. 'Bearer abcde12345'.",
+                    "description": "Enter the token with the `Bearer ` prefix, e.g. 'Bearer abcde12345'.",
                 }
             },
             "security": [{"Bearer": []}],
         }
         security = Security(app, api.datastore)
         safrs = SafrsApi(
-            app, host="127.0.0.1", prefix="/api", custom_swagger=custom_swagger
+            app,
+            host=os.environ.get("WEBSITE_SITE_NAME") or "127.0.0.1",
+            prefix="/api",
+            custom_swagger=custom_swagger,
         )
 
         for model in api.models:
@@ -81,7 +84,7 @@ def setup_database(app):
             os.environ["VENDOR_SECRET_TOKEN"] = secret_token
         else:
             company_type = "All"
-        
+
         os.environ["VENDOR_COMPANY_TYPE"] = company_type
         company = fake.company()
         os.environ["VENDOR_COMPANY_NAME"] = company
