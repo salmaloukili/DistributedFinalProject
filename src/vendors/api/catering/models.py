@@ -53,10 +53,8 @@ def populate_database():
     if Menu.query.count() > 1:
         return "Success"
 
-    for _ in range(0, random.randint(5, 10)):
-        menu = Menu()
-        for _ in range(0, random.randint(5, 10)):
-            Meal(menu_id=menu.id)
+    for _ in range(0, random.randint(1, 2)):
+        Menu()
     return "Success"
 
 

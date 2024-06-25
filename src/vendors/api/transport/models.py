@@ -66,7 +66,7 @@ class Seat(BaseModel):
 def populate_database():
     if Bus.query.count() > 1:
         return "Success"
-    for _ in range(0, random.randint(2, 4)):
+    for _ in range(0, random.randint(1, 2)):
         bus = Bus()
         for day in range(0, 60):
             schedule = Schedule(bus_id=bus.id, departure_date=date(2024, 6, 16) + timedelta(day))

@@ -11,7 +11,7 @@ class Venue(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = FunctionDefault(db.String(100), default=fake.company)
     location = FunctionDefault(db.String(200), default=fake.address)
-    capacity = FunctionDefault(db.Integer, default=lambda: random.randint(50, 500))
+    capacity = FunctionDefault(db.Integer, default=lambda: random.randint(10, 100))
     events = db.relationship("Event", back_populates="venue")
 
 
@@ -38,7 +38,9 @@ class Event(BaseModel):
     def price(self):
         venue: Venue = Venue.query.filter(Venue.id == self.venue_id).one()
         ticket_count = Ticket.query.filter(Ticket.event_id == self.id).count()
-        price = round(self.max_price * ((ticket_count + 1) / (venue.capacity)))
+        price = round(
+            self.max_price * ((ticket_count) / (venue.capacity))
+        )
 
         return price
 
@@ -81,11 +83,11 @@ class Ticket(BaseModel):
 def populate_database():
     if Venue.query.count() > 1:
         return "Success"
-    for _ in range(0, random.randint(5, 7)):
+    for _ in range(0, random.randint(1, 2)):
         venue = Venue()
-        for _ in range(0, random.randint(10, 11)):
+        for _ in range(0, random.randint(1, 2)):
             event = Event(venue_id=venue.id)
-            for _ in range(0, random.randint(5, 20)):
+            for _ in range(0, random.randint(5, 10)):
                 Ticket(event_id=event.id)
     return "Success"
 

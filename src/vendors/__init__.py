@@ -67,10 +67,12 @@ def setup_database(app):
             },
             "security": [{"Bearer": []}],
         }
+        site_name = os.environ.get("WEBSITE_SITE_NAME") 
         security = Security(app, api.datastore)
         safrs = SafrsApi(
             app,
-            host=os.environ.get("WEBSITE_SITE_NAME") or "127.0.0.1",
+            host=site_name + ".azurewebsites.net" if site_name else "127.0.0.1",
+            port= 80 if site_name else 5000,
             prefix="/api",
             custom_swagger=custom_swagger,
         )
