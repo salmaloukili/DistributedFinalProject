@@ -15,7 +15,7 @@ export default function AppPage() {
   useEffect(() => {
     const getEvents = getCallable('endpoints-getEvents');
 
-    getEvents({ offset: 0, limit: 10 })
+    getEvents({ offset: 0, limit: 100 })
       .then((result) => {
         if (result.data) {
           const fetchedEvents = result.data.map((event) => ({

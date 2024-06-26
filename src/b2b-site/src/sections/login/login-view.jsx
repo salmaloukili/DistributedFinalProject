@@ -38,7 +38,7 @@ export default function LoginView() {
         },
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       ],
-      // credentialHelper: firebaseui.auth.CredentialHelper.GOOGLE_YOLO,
+      credentialHelper: firebaseui.auth.CredentialHelper.GOOGLE_YOLO,
     });
   }, []);
 

@@ -72,7 +72,7 @@ export default function EventCard({ event }) {
           <br />
           {`Price: ${event.price} EUR`}
           <br />
-          {`Venue: ${event.venue.name} EUR`}
+          {`Venue: ${event.venue.name}`}
         </Typography>
       </Stack>
     </Card>
