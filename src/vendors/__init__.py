@@ -67,28 +67,30 @@ def setup_database(app):
             },
             "security": [{"Bearer": []}],
         }
-        site_name = os.environ.get("WEBSITE_SITE_NAME") 
+        site_name = os.environ.get("WEBSITE_SITE_NAME")
         security = Security(app, api.datastore)
         safrs = SafrsApi(
             app,
             host=site_name + ".azurewebsites.net" if site_name else "127.0.0.1",
-            port= 80 if site_name else 5000,
+            port=80 if site_name else 5000,
             prefix="/api",
             custom_swagger=custom_swagger,
         )
 
         for model in api.models:
             admin.add_view(api.AdminModelView(model, api.db.session))
-
-        if os.environ.get("VENDOR_NUMBER"):
+            
+        vendor_number = os.environ.get("VENDOR_NUMBER")
+        if vendor_number and vendor_number != "0":
             company_type = random.choice(["Venue", "Transport", "Catering"])
             secret_token = fake.password(40, False, True, True, True)
             os.environ["VENDOR_SECRET_TOKEN"] = secret_token
+            company = fake.company()
         else:
+            company = "Ticket Fusion"
             company_type = "All"
 
         os.environ["VENDOR_COMPANY_TYPE"] = company_type
-        company = fake.company()
         os.environ["VENDOR_COMPANY_NAME"] = company
         api.populate_database()
 

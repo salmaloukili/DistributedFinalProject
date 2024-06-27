@@ -158,7 +158,7 @@ exports.queryTransport = functions
   .runWith({
     timeoutSeconds: 540,
   })
-  .pubsub.schedule("every 15 minutes")
+  .pubsub.schedule("every 2 minutes")
   .onRun(async (context) => {
     await getData(await sources.transport, [
       {
@@ -200,7 +200,7 @@ exports.queryCatering = functions
   .runWith({
     timeoutSeconds: 540,
   })
-  .pubsub.schedule("every 15 minutes")
+  .pubsub.schedule("every 5 minutes")
   .onRun(async (context) => {
     await getData(await sources.catering, [
       {
@@ -223,7 +223,7 @@ exports.queryVenues = functions
   .runWith({
     timeoutSeconds: 540,
   })
-  .pubsub.schedule("every 15 minutes")
+  .pubsub.schedule("every 5 minutes")
   .onRun(async (context) => {
     await getData(await sources.venues, [
       {

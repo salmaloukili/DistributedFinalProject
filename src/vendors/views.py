@@ -9,8 +9,12 @@ bp = Blueprint(
     "base",
     static_url_path="static",
 )
+vendor_number = os.environ.get("VENDOR_NUMBER")
 
-logo_number = random.randint(1, 100)
+if vendor_number and vendor_number != "0":
+    logo_number = random.randint(1, 100)
+else:
+    logo_number = 0
 
 
 @bp.route("/logo")
