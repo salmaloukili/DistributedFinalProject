@@ -8,7 +8,7 @@ export default function LoginPage() {
   return (
     <>
       <Helmet>
-        <title> Login | B2B </title>
+        <title> Login | Ticket Fusion </title>
       </Helmet>
 
       <LoginView />

@@ -36,9 +36,9 @@ export default function AppPage() {
   const sortEvents = (eventsToSort, sortBy) => {
     const sorted = [...eventsToSort];
     if (sortBy === 'priceAsc') {
-      sorted.sort((a, b) => a.max_price - b.max_price);
+      sorted.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'priceDesc') {
-      sorted.sort((a, b) => b.max_price - a.max_price);
+      sorted.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'dateAsc') {
       sorted.sort((a, b) => a.date._seconds - b.date._seconds);
     } else if (sortBy === 'dateDesc') {
@@ -73,7 +73,7 @@ export default function AppPage() {
       <Grid container spacing={3}>
         {sortedEvents.length > 0 ? (
           sortedEvents.map((event) => (
-            <Grid key={event.id} xs={12} sm={6} md={3}>
+            <Grid key={event.ref} xs={12} sm={6} md={3}>
               <EventCard event={event} />
             </Grid>
           ))

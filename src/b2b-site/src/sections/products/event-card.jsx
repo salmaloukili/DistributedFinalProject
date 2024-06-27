@@ -10,7 +10,7 @@ import ImageComponent from 'src/components/firebase-image';
 
 export default function EventCard({ event }) {
   return (
-    <Card sx={{ minHeight: '20rem' }}>
+    <Card sx={{ minHeight: '24rem' }}>
       <Box sx={{ position: 'relative' }}>
         <Link
           component={RouterLink}
@@ -54,7 +54,7 @@ export default function EventCard({ event }) {
         </Box>
       </Box>
 
-      <Stack spacing={2} sx={{ p: 3, pt: '11rem' }}>
+      <Stack spacing={2} sx={{ p: 3, pt: '11rem'}}>
         <Link
           component={RouterLink}
           to={`/event/${event.id}`}
