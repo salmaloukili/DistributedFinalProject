@@ -7,7 +7,6 @@ import { Timestamp } from "firebase-admin/firestore";
 exports.getEvents = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
     minInstances: 1,
   },
   async (request) => {
@@ -49,7 +48,6 @@ exports.getEvents = onCall(
 exports.getTransportation = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
     minInstances: 1,
   },
   async (request) => {
@@ -94,7 +92,6 @@ exports.getTransportation = onCall(
 exports.getFood = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     const requestData = request.data;
@@ -125,7 +122,6 @@ exports.getFood = onCall(
 exports.getAllUsers = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     if (
@@ -151,7 +147,6 @@ exports.getAllUsers = onCall(
 exports.getAllPackages = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     if (
@@ -168,7 +163,6 @@ exports.getAllPackages = onCall(
 exports.reserve = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     const dt = new Date();
@@ -356,7 +350,6 @@ exports.reserve = onCall(
 exports.getUserPackages = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     const querySnapshot = await base.db
@@ -372,7 +365,6 @@ exports.getUserPackages = onCall(
 exports.buyPackage = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     const success: String[] = [];
@@ -464,7 +456,6 @@ exports.buyPackage = onCall(
 exports.removePackage = onCall(
   {
     region: "europe-west1",
-    enforceAppCheck: true,
   },
   async (request) => {
     const purchaseDoc = (

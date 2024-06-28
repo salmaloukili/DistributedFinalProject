@@ -26,10 +26,6 @@ if (import.meta.env.PROD) {
   auth = getAuth(app);
   functions = getFunctions(app, 'europe-west1');
   storage = getStorage(app);
-  check = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LcD0PwpAAAAAJS_dqQU7tndXlN8esC2-rkkHD46'),
-    isTokenAutoRefreshEnabled: true,
-  });
 } else {
   app = initializeApp({
     apiKey: '',
@@ -47,11 +43,6 @@ if (import.meta.env.PROD) {
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);
   storage = getStorage(app);
   connectStorageEmulator(storage, '127.0.0.1', 9199);
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  check = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LcD0PwpAAAAAJS_dqQU7tndXlN8esC2-rkkHD46'),
-    isTokenAutoRefreshEnabled: true,
-  });
 }
 
 function getCallable(name) {
