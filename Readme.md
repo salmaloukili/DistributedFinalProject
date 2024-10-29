@@ -1,7 +1,7 @@
-# Firebase Event packages
+# Firebase Event packages 
 
 
-This project implements a distributed event broker system where users can purchase event packages, including transportation and catering, using a serverless architecture on Google Cloud. The system leverages Firestore for data storage, Firebase Authentication for user management, and Cloud Functions for scalable API endpoints.
+This project implements a distributed event broker system where users can purchase event packages, including transportation and catering, using a serverless architecture on Google Cloud. The system uses Firestore for data storage, Firebase Authentication for user management, and Cloud Functions for scalable API endpoints.
 
 ## Features
 - **Event Packages**: Users can view, reserve, and purchase event packages.
